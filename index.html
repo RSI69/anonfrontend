@@ -2,167 +2,133 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ANONToken DApp (Linea Sepolia)</title>
-
-  <!-- Ethers v5 ESM -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js"></script>
-  <!-- merkletreejs ESM + keccak256 helper -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/merkletreejs@0.2.42/dist/merkletree.esm.js"></script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/keccak256@1.0.6/keccak256.js"></script>
+  <title>ANONToken – Linea Sepolia demo</title>
 </head>
-
 <body>
 <h1>ANONToken</h1>
-<button id="connect">Connect Wallet</button><br><br>
+<button id="connect">Connect wallet</button><br><br>
 <button id="mint">Mint 1 ANON (0.00000001 ETH)</button><br><br>
-<button id="burn">Burn ANON → Stealth Withdraw</button><br><br>
+<button id="burn">Burn ANON → stealth</button>
 
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
-import { MerkleTree } from 'https://cdn.jsdelivr.net/npm/merkletreejs@0.2.42/dist/merkletree.esm.js';
-import keccak256 from 'https://cdn.jsdelivr.net/npm/keccak256@1.0.6/keccak256.js';
 
-const CONTRACT_ADDRESS = '0x50c9EF1EFCe5D76590eeaF2e4B197E46C1E9E305';
-const CONTRACT_ABI = [
-  { inputs: [], name: 'mint', outputs: [], stateMutability: 'payable', type: 'function' },
-  { inputs: [
-      { internalType: 'bytes32', name: 'stealthHash',  type: 'bytes32' },
-      { internalType: 'bytes',   name: 'signature',    type: 'bytes'   },
-      { internalType: 'uint256', name: 'userEntropy',  type: 'uint256'}
-    ], name: 'requestBurn', outputs: [], stateMutability: 'payable', type: 'function'
-  },
-  { inputs: [
-      { internalType: 'bytes32',   name: 'stealthHash', type: 'bytes32' },
-      { internalType: 'bytes32[]', name: 'proof',       type: 'bytes32[]' }
-    ], name: 'registerStealthAddress', outputs: [], stateMutability: 'nonpayable', type: 'function'
-  },
-  { inputs: [], name: 'merkleRoot', outputs: [{internalType:'bytes32',name:'',type:'bytes32'}], stateMutability:'view',type:'function' },
-  { inputs: [], name: 'mintPrice',  outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }], stateMutability:'view', type:'function' },
-  { inputs: [{internalType:'address', name:'account', type:'address'}], name:'balanceOf', outputs:[{internalType:'uint256',name:'',type:'uint256'}], stateMutability:'view', type:'function' },
-  { inputs: [], name:'totalSupply', outputs:[{internalType:'uint256',name:'',type:'uint256'}], stateMutability:'view', type:'function' },
+const CONTRACT = '0xf30cA5f419D7cfa03DCe33C5Bd73B950D285009b';
+const ABI = [
+  { name:'mint',                      type:'function', stateMutability:'payable', inputs:[], outputs:[] },
+  { name:'requestBurn',               type:'function', stateMutability:'payable',
+    inputs:[
+      {name:'stealthHash', type:'bytes32'},
+      {name:'signature',   type:'bytes'},
+      {name:'userEntropy', type:'uint256'}
+    ], outputs:[] },
+  { name:'registerStealthAddress',    type:'function', stateMutability:'nonpayable',
+    inputs:[
+      {name:'stealthHash', type:'bytes32'},
+      {name:'proof',       type:'bytes32[]'}
+    ], outputs:[] },
+  { name:'burnIds',   type:'function', inputs:[{name:'a',type:'address'}], stateMutability:'view', outputs:[{type:'uint256'}] },
+  { name:'mintPrice', type:'function', inputs:[], stateMutability:'view', outputs:[{type:'uint256'}] }
 ];
 
-const LINEA_CHAIN_ID   = 59141;     // 0xe705
-const LINEA_CHAIN_ID_HEX = '0xe705';
+const LINEA = '0xe705';   // 59141
 
 let provider;
 
-/* –– helpers –– */
-async function ensureLinea () {
-  const current = await window.ethereum.request({ method:'eth_chainId'});
-  if (parseInt(current,16) !== LINEA_CHAIN_ID) {
-    try {
-      await window.ethereum.request({ method:'wallet_switchEthereumChain', params:[{chainId:LINEA_CHAIN_ID_HEX}]});
-    } catch (e) {
-      if (e.code === 4902) {
-        await window.ethereum.request({
-          method:'wallet_addEthereumChain',
-          params:[{
-            chainId: LINEA_CHAIN_ID_HEX,
-            chainName: 'Linea Sepolia Testnet',
-            rpcUrls: ['https://rpc.sepolia.linea.build'],
-            nativeCurrency:{ name:'LineaETH', symbol:'LineaETH', decimals:18 },
-            blockExplorerUrls:['https://sepolia.lineascan.build']
-          }]
-        });
-      } else { throw e; }
-    }
+/* ---------- helpers ---------- */
+async function ensureLinea() {
+  const cid = await window.ethereum.request({method:'eth_chainId'});
+  if (cid === LINEA) return;
+  try {
+    await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:LINEA}]});
+  } catch (e) {
+    if (e.code === 4902) {
+      await window.ethereum.request({
+        method:'wallet_addEthereumChain',
+        params:[{
+          chainId:LINEA,
+          chainName:'Linea Sepolia Testnet',
+          rpcUrls:['https://rpc.sepolia.linea.build'],
+          nativeCurrency:{name:'LineaETH',symbol:'LineaETH',decimals:18},
+          blockExplorerUrls:['https://sepolia.lineascan.build']
+        }]
+      });
+    } else { throw e; }
   }
 }
 
-async function connectWallet () {
-  if (!window.ethereum) { alert('MetaMask or Rabby not installed'); return; }
+function saveKey(hex) {
+  const blob = new Blob([hex.slice(2)], {type:'text/plain'});
+  const link = document.createElement('a');
+  link.href  = URL.createObjectURL(blob);
+  link.download = 'stealth_private_key.txt';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* ---------- UI actions ---------- */
+async function connectWallet() {
+  if (!window.ethereum) return alert('MetaMask or Rabby not found');
   provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
   await provider.send('eth_requestAccounts', []);
   await ensureLinea();
-  alert('Wallet connected');
+  alert('Wallet connected to Linea Sepolia');
 }
 
-/* –– Mint –– */
-async function mintToken () {
-  if (!provider) { alert('Connect wallet first'); return; }
+async function mintToken() {
+  if (!provider) return alert('Connect wallet first');
   const signer   = provider.getSigner();
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-  const price    = await contract.mintPrice();             // 0.00000001 ETH
-  const tx = await contract.mint({ value: price });
+  const c        = new ethers.Contract(CONTRACT, ABI, signer);
+  const price    = await c.mintPrice();
+  const tx       = await c.mint({ value: price });
   await tx.wait();
   alert('Minted 1 ANON');
 }
 
-/* –– Burn –– */
-async function burnAnon () {
-  if (!provider) { alert('Connect wallet first'); return; }
+async function burnAnon() {
+  if (!provider) return alert('Connect wallet first');
+  const signer   = provider.getSigner();
+  const user     = await signer.getAddress();
+  const c        = new ethers.Contract(CONTRACT, ABI, signer);
 
-  const signer      = provider.getSigner();
-  const userAddress = await signer.getAddress();
-  const contract    = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-  /* STEP 0 – entropy & stealthHash */
+  /* A. generate entropy + stealthHash */
   const entropy     = ethers.BigNumber.from(ethers.utils.randomBytes(32));
   const stealthHash = ethers.utils.keccak256(
-    ethers.utils.defaultAbiCoder.encode(['address','uint256'],[userAddress, entropy])
+    ethers.utils.defaultAbiCoder.encode(['address','uint256'],[user, entropy])
   );
 
-  /* STEP 1 – build (single-leaf) Merkle proof */
-  const leaves  = [stealthHash];
-  const tree    = new MerkleTree(leaves, keccak256, { sortPairs:true });
-  const proof   = tree.getHexProof(stealthHash);
-  const root    = tree.getHexRoot();
-
-  /* STEP 1.5 – ensure contract’s merkleRoot matches (dev-only logic) */
-  const onChainRoot = await contract.merkleRoot();
-  if (onChainRoot !== '0x'+('0'.repeat(64)) && onChainRoot !== root) {
-    alert('Contract merkleRoot is different; owner must update it before registration');
-    return;
-  }
-
-  /* STEP 2 – register stealth address */
-  const tx1 = await contract.registerStealthAddress(stealthHash, proof);
+  /* B. register (no proof needed after Option A) */
+  const tx1 = await c.registerStealthAddress(stealthHash, []);
   await tx1.wait();
 
-  /* STEP 3 – signature (after burnId incremented in tx1) */
-  const burnId  = await contract.burnIds(userAddress);
+  /* C. sign burn request */
+  const burnId  = await c.burnIds(user);
   const { chainId } = await provider.getNetwork();
-  const messageHash = ethers.utils.solidityKeccak256(
+  const digest = ethers.utils.solidityKeccak256(
     ['address','bytes32','address','uint256','uint256'],
-    [userAddress, stealthHash, CONTRACT_ADDRESS, burnId, chainId]
+    [user, stealthHash, CONTRACT, burnId, chainId]
   );
-  const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+  const sig = await signer.signMessage(ethers.utils.arrayify(digest));
 
-  /* STEP 4 – prepare fee */
-  const estGas   = await contract.estimateGas.requestBurn(stealthHash, signature, entropy);
-  const gasPrice = await provider.getGasPrice();
-  const gasCost  = estGas.mul(gasPrice);
-  const dynFee   = gasCost.mul(30).div(10000);                     // 0.3 %
-  const safety   = ethers.utils.parseEther('0.0002');
-  let   value    = gasCost.add(dynFee).add(safety);
-  const min      = ethers.utils.parseEther('0.0011');              // contract floor + cushion
-  if (value.lt(min)) value = min;
-
-  /* STEP 5 – requestBurn */
-  const tx2 = await contract.requestBurn(
-    stealthHash,
-    signature,
-    entropy,
-    { value, gasLimit: estGas.add(50000) }
+  /* D. pay ≥0.001 ETH (contract floor) */
+  const minValue = ethers.utils.parseEther('0.0011');
+  const estGas   = await c.estimateGas.requestBurn(stealthHash, sig, entropy);
+  const tx2 = await c.requestBurn(
+    stealthHash, sig, entropy,
+    { value: minValue, gasLimit: estGas.add(50_000) }
   );
   await tx2.wait();
 
-  /* STEP 6 – download stealth priv-key (preimage) */
-  const element = document.createElement('a');
-  const file    = new Blob([stealthHash.replace(/^0x/,'')], {type:'text/plain'});
-  element.href  = URL.createObjectURL(file);
-  element.download = 'stealth_private_key.txt';
-  document.body.appendChild(element); element.click(); document.body.removeChild(element);
-
-  alert('Burn submitted. Save the downloaded key!');
+  saveKey(stealthHash);
+  alert('Burn submitted – save the downloaded key!');
 }
 
-/* –– wire UI –– */
-window.addEventListener('load', () => {
+/* ---------- wire buttons ---------- */
+window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('connect').onclick = connectWallet;
-  document.getElementById('mint').onclick    = mintToken;
-  document.getElementById('burn').onclick    = burnAnon;
+  document.getElementById('mint')   .onclick = mintToken;
+  document.getElementById('burn')   .onclick = burnAnon;
 });
 </script>
 </body>
