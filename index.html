@@ -16,7 +16,6 @@
     import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
     const CONTRACT_ADDRESS = "0x7a90474451219Dff38a45227907035189499300e";
-
     const CONTRACT_ABI = [
       { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "approve", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
       { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
@@ -32,11 +31,21 @@
       { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transfer", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
       { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transferFrom", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }
     ];
-
     const LINEA_CHAIN_ID = 59141;
 
     let provider;
     let localStealthLeaves = [];
+
+    function saveLeaves() {
+      localStorage.setItem("anon_leaves", JSON.stringify(localStealthLeaves));
+    }
+
+    function loadLeaves() {
+      const saved = localStorage.getItem("anon_leaves");
+      if (saved) {
+        localStealthLeaves = JSON.parse(saved);
+      }
+    }
 
     async function ensureLinea() {
       const chainId = await window.ethereum.request({ method: "eth_chainId" });
@@ -62,9 +71,9 @@
       }
     }
 
-    function generateStealthAddress(userAddress) {
+    function generateStealthAddress(userAddress, randomSalt) {
       return ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(["address"], [userAddress])
+        ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [userAddress, randomSalt])
       );
     }
 
@@ -82,6 +91,7 @@
       provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       await ensureLinea();
+      loadLeaves();
       alert("Wallet connected.");
     }
 
@@ -104,15 +114,16 @@
       }
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const randomSalt = ethers.BigNumber.from(ethers.utils.randomBytes(32));
+      const stealthHash = generateStealthAddress(userAddress, randomSalt);
 
-      const stealthHash = generateStealthAddress(userAddress);
       if (!localStealthLeaves.includes(stealthHash)) {
         localStealthLeaves.push(stealthHash);
+        saveLeaves();
       }
 
       const proof = generateMerkleProof(stealthHash);
-
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       const tx = await contract.registerStealthAddress(stealthHash, proof);
       await tx.wait();
       alert("Stealth address registered.");
@@ -123,17 +134,22 @@
         alert("Connect wallet first.");
         return;
       }
+
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const randomSalt = ethers.BigNumber.from(ethers.utils.randomBytes(32));
+      const stealthHash = generateStealthAddress(userAddress, randomSalt);
 
-      const stealthHash = generateStealthAddress(userAddress);
       if (!localStealthLeaves.includes(stealthHash)) {
-        alert("Stealth address not registered locally.");
-        return;
+        localStealthLeaves.push(stealthHash);
+        saveLeaves();
       }
 
       const proof = generateMerkleProof(stealthHash);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+      const wallet = ethers.Wallet.createRandom();
+      const stealthRecipient = wallet.address;
 
       const burnId = await contract.burnIds(userAddress);
       const { chainId } = await provider.getNetwork();
@@ -143,28 +159,30 @@
       );
       const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
 
-      const estimatedGasCost = await contract.estimateGasCost();
+      let estimatedGasCost;
+      try {
+        estimatedGasCost = await contract.estimateGas.requestBurn(
+          stealthHash,
+          stealthRecipient,
+          signature,
+          randomSalt,
+          { value: ethers.utils.parseEther("0.002") }
+        );
+      } catch (e) {
+        estimatedGasCost = ethers.BigNumber.from("500000");
+      }
+
       const dynamicFee = await contract.calculateFee(estimatedGasCost);
       const totalValue = estimatedGasCost.add(dynamicFee);
 
-      const entropy = Math.floor(Math.random() * 1e18);
-
-      const gasEstimate = await contract.estimateGas.requestBurn(
-        stealthHash,
-        userAddress,
-        signature,
-        entropy,
-        { value: totalValue }
-      );
-
       const tx = await contract.requestBurn(
         stealthHash,
-        userAddress,
+        stealthRecipient,
         signature,
-        entropy,
+        randomSalt,
         {
           value: totalValue,
-          gasLimit: gasEstimate.add(ethers.BigNumber.from("50000"))
+          gasLimit: estimatedGasCost.add(ethers.BigNumber.from("50000"))
         }
       );
 
