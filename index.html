@@ -16,138 +16,43 @@
 
     const CONTRACT_ADDRESS = "0x7a90474451219Dff38a45227907035189499300e";
     const CONTRACT_ABI = [
-      {
-        "inputs": [
-          { "internalType": "address", "name": "spender", "type": "address" },
-          { "internalType": "uint256", "name": "value", "type": "uint256" }
-        ],
-        "name": "approve",
-        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
-      {
-        "inputs": [],
-        "name": "mint",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" },
-          { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" }
-        ],
-        "name": "registerStealthAddress",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" },
-          { "internalType": "address", "name": "stealthRecipient", "type": "address" },
-          { "internalType": "bytes", "name": "signature", "type": "bytes" },
-          { "internalType": "uint256", "name": "userEntropy", "type": "uint256" }
-        ],
-        "name": "requestBurn",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "mintPrice",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "owner", "type": "address" },
-          { "internalType": "address", "name": "spender", "type": "address" }
-        ],
-        "name": "allowance",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "account", "type": "address" }
-        ],
-        "name": "balanceOf",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "totalSupply",
-        "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "name",
-        "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "symbol",
-        "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "to", "type": "address" },
-          { "internalType": "uint256", "name": "value", "type": "uint256" }
-        ],
-        "name": "transfer",
-        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          { "internalType": "address", "name": "from", "type": "address" },
-          { "internalType": "address", "name": "to", "type": "address" },
-          { "internalType": "uint256", "name": "value", "type": "uint256" }
-        ],
-        "name": "transferFrom",
-        "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
+      { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "approve", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
+      { "inputs": [], "name": "mint", "outputs": [], "stateMutability": "payable", "type": "function" },
+      { "inputs": [ { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" } ], "name": "registerStealthAddress", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [ { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "address", "name": "stealthRecipient", "type": "address" }, { "internalType": "bytes", "name": "signature", "type": "bytes" }, { "internalType": "uint256", "name": "userEntropy", "type": "uint256" } ], "name": "requestBurn", "outputs": [], "stateMutability": "payable", "type": "function" },
+      { "inputs": [], "name": "mintPrice", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "spender", "type": "address" } ], "name": "allowance", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "account", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "totalSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transfer", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transferFrom", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }
     ];
 
     const LINEA_CHAIN_ID = 59141;
 
     async function ensureLinea() {
+      if (!window.ethereum) {
+        alert("MetaMask is required.");
+        return;
+      }
       const provider = window.ethereum;
       const { chainId } = await provider.request({ method: "eth_chainId" });
       if (parseInt(chainId, 16) !== LINEA_CHAIN_ID) {
         try {
-          await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xe708" }] });
+          await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xe705" }] });
         } catch (err) {
           if (err.code === 4902) {
             await provider.request({
               method: "wallet_addEthereumChain",
               params: [{
-                chainId: "0xe708",
-                chainName: "Linea Mainnet",
-                rpcUrls: ["https://rpc.linea.build"],
-                nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
-                blockExplorerUrls: ["https://lineascan.build"]
+                chainId: "0xe705",
+                chainName: "Linea Sepolia Testnet",
+                rpcUrls: ["https://rpc.sepolia.linea.build"],
+                nativeCurrency: { name: "LineaETH", symbol: "LineaETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.lineascan.build"]
               }]
             });
           } else {
@@ -216,7 +121,7 @@
       await tx.wait();
       return {
         hash: tx.hash,
-        explorer: `https://lineascan.build/tx/${tx.hash}`
+        explorer: `https://sepolia.lineascan.build/tx/${tx.hash}`
       };
     }
 
@@ -228,16 +133,20 @@
       let provider;
 
       connectBtn.onclick = async () => {
-        await ensureLinea();
+        if (!window.ethereum) {
+          alert("Please install MetaMask.");
+          return;
+        }
         await window.ethereum.request({ method: "eth_requestAccounts" });
         provider = new ethers.providers.Web3Provider(window.ethereum);
-        alert("Connected to Linea");
+        await ensureLinea();
+        alert("Wallet connected.");
       };
 
       mintBtn.onclick = async () => {
         const signer = provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-        const tx = await contract.mint({ value: ethers.utils.parseEther("0.1") });
+        const tx = await contract.mint({ value: ethers.utils.parseEther("0.00000001") });
         await tx.wait();
         alert("Minted 1 ANON");
       };
@@ -245,7 +154,7 @@
       burnBtn.onclick = async () => {
         const stealth = document.getElementById("stealth").value;
         const userAddress = await provider.getSigner().getAddress();
-        const merkleProof = []; // TODO: supply the proof if needed
+        const merkleProof = [];
         const tx = await requestAnonBurn({ provider, userAddress, stealthRecipient: stealth, merkleProof });
         alert("Burn complete: " + tx.explorer);
       };
