@@ -106,6 +106,9 @@
     const stealthWallet = new ethers.Wallet(stealthPrivateKey);
     const stealthRecipient = stealthWallet.address;
   
+    // 👇 Register stealth address first
+    await contract.registerStealthAddress(stealthHash, []);
+  
     const burnId = await contract.burnIds(userAddress);
     const { chainId } = await provider.getNetwork();
   
