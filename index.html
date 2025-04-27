@@ -16,19 +16,19 @@
 
     const CONTRACT_ADDRESS = "0x7a90474451219Dff38a45227907035189499300e";
     const CONTRACT_ABI = [
-      { "inputs": [{ "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" }], "name": "approve", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "approve", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
       { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
       { "inputs": [], "name": "mint", "outputs": [], "stateMutability": "payable", "type": "function" },
-      { "inputs": [{ "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" }], "name": "registerStealthAddress", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-      { "inputs": [{ "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "address", "name": "stealthRecipient", "type": "address" }, { "internalType": "bytes", "name": "signature", "type": "bytes" }, { "internalType": "uint256", "name": "userEntropy", "type": "uint256" }], "name": "requestBurn", "outputs": [], "stateMutability": "payable", "type": "function" },
-      { "inputs": [], "name": "mintPrice", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
-      { "inputs": [{ "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "spender", "type": "address" }], "name": "allowance", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
-      { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
-      { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
-      { "inputs": [], "name": "name", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" },
-      { "inputs": [], "name": "symbol", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" },
-      { "inputs": [{ "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" }], "name": "transfer", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" },
-      { "inputs": [{ "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" }], "name": "transferFrom", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "nonpayable", "type": "function" }
+      { "inputs": [ { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" } ], "name": "registerStealthAddress", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [ { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "address", "name": "stealthRecipient", "type": "address" }, { "internalType": "bytes", "name": "signature", "type": "bytes" }, { "internalType": "uint256", "name": "userEntropy", "type": "uint256" } ], "name": "requestBurn", "outputs": [], "stateMutability": "payable", "type": "function" },
+      { "inputs": [], "name": "mintPrice", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "spender", "type": "address" } ], "name": "allowance", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "account", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "totalSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transfer", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
+      { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transferFrom", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }
     ];
 
     const LINEA_CHAIN_ID = 59141;
@@ -36,7 +36,7 @@
     async function ensureLinea() {
       if (!window.ethereum) {
         alert("MetaMask is required.");
-        throw new Error("No MetaMask");
+        return;
       }
       const provider = window.ethereum;
       const { chainId } = await provider.request({ method: "eth_chainId" });
@@ -77,27 +77,22 @@
     async function requestAnonBurn({ provider, userAddress, stealthRecipient, merkleProof }) {
       const signer = provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
       const stealthHash = hashStealthAddress(stealthRecipient);
       const isRegistered = await contract.registeredStealthAddresses(stealthHash);
       if (!isRegistered) {
         const tx = await contract.registerStealthAddress(stealthHash, merkleProof);
         await tx.wait();
       }
-
       const burnId = await contract.burnIds(userAddress);
       const { chainId } = await provider.getNetwork();
-
       const messageHash = ethers.utils.solidityKeccak256(
         ["address", "bytes32", "address", "uint256", "uint256"],
         [userAddress, stealthHash, CONTRACT_ADDRESS, burnId, chainId]
       );
       const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
-
       const estimatedGasCost = await contract.estimateGasCost();
       const dynamicFee = await contract.calculateFee(estimatedGasCost);
       const totalValue = estimatedGasCost.add(dynamicFee);
-
       const entropy = generateEntropy();
       const gasEstimate = await contract.estimateGas.requestBurn(
         stealthHash,
@@ -106,7 +101,6 @@
         entropy,
         { value: totalValue }
       );
-
       const tx = await contract.requestBurn(
         stealthHash,
         stealthRecipient,
@@ -117,30 +111,40 @@
           gasLimit: gasEstimate.add(ethers.BigNumber.from("50000"))
         }
       );
-
       await tx.wait();
-      return { hash: tx.hash, explorer: `https://sepolia.lineascan.build/tx/${tx.hash}` };
+      return {
+        hash: tx.hash,
+        explorer: `https://sepolia.lineascan.build/tx/${tx.hash}`
+      };
     }
 
-    window.onload = () => {
+    window.addEventListener('load', () => {
       const connectBtn = document.getElementById("connect");
       const mintBtn = document.getElementById("mint");
       const burnBtn = document.getElementById("burn");
-
       let provider;
 
       connectBtn.onclick = async () => {
-        if (!window.ethereum) {
-          alert("Please install MetaMask.");
+        if (typeof window.ethereum === 'undefined') {
+          alert("MetaMask is not installed. Please install it first.");
           return;
         }
-        await ensureLinea();
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        alert("Wallet connected.");
+        try {
+          await window.ethereum.request({ method: "eth_requestAccounts" });
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          await ensureLinea();
+          alert("Wallet connected.");
+        } catch (error) {
+          console.error("Connection error:", error);
+          alert("Could not connect wallet.");
+        }
       };
 
       mintBtn.onclick = async () => {
+        if (!provider) {
+          alert("Please connect wallet first.");
+          return;
+        }
         const signer = provider.getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
         const tx = await contract.mint({ value: ethers.utils.parseEther("0.00000001") });
@@ -149,14 +153,17 @@
       };
 
       burnBtn.onclick = async () => {
+        if (!provider) {
+          alert("Please connect wallet first.");
+          return;
+        }
         const stealth = document.getElementById("stealth").value;
         const userAddress = await provider.getSigner().getAddress();
         const merkleProof = [];
         const tx = await requestAnonBurn({ provider, userAddress, stealthRecipient: stealth, merkleProof });
         alert("Burn complete: " + tx.explorer);
       };
-    };
-
+    });
   </script>
 </body>
 </html>
