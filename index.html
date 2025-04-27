@@ -3,49 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <title>ANONToken DApp</title>
-  <script src="https://cdn.jsdelivr.net/npm/merkletreejs@0.2.16/dist/merkletreejs.min.js"></script>
 </head>
 <body>
   <h1>ANONToken</h1>
   <button id="connect">Connect Wallet</button><br><br>
   <button id="mint">Mint 1 ANON (0.00000001 ETH)</button><br><br>
-  <button id="register">Register Stealth Address</button><br><br>
-  <button id="burn">Burn ANON for Stealth Withdraw</button>
+  <button id="burn">Burn ANON for Stealth Withdraw</button><br><br>
 
   <script type="module">
     import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-    const CONTRACT_ADDRESS = "0x7a90474451219Dff38a45227907035189499300e";
+    const CONTRACT_ADDRESS = "0x3c1F6fa3256a7A44F9864d7Bc65B863a19074915";
     const CONTRACT_ABI = [
-      { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "approve", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
-      { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
       { "inputs": [], "name": "mint", "outputs": [], "stateMutability": "payable", "type": "function" },
-      { "inputs": [ { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" } ], "name": "registerStealthAddress", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
-      { "inputs": [ { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" }, { "internalType": "address", "name": "stealthRecipient", "type": "address" }, { "internalType": "bytes", "name": "signature", "type": "bytes" }, { "internalType": "uint256", "name": "userEntropy", "type": "uint256" } ], "name": "requestBurn", "outputs": [], "stateMutability": "payable", "type": "function" },
-      { "inputs": [], "name": "mintPrice", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-      { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "spender", "type": "address" } ], "name": "allowance", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-      { "inputs": [ { "internalType": "address", "name": "account", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-      { "inputs": [], "name": "totalSupply", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" },
-      { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
-      { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" },
-      { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transfer", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
-      { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "transferFrom", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" }
+      { "inputs": [
+          { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" },
+          { "internalType": "bytes", "name": "signature", "type": "bytes" },
+          { "internalType": "uint256", "name": "userEntropy", "type": "uint256" }
+        ],
+        "name": "requestBurn", "outputs": [], "stateMutability": "payable", "type": "function"
+      },
+      { "inputs": [], "name": "mintPrice", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+      { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "totalSupply", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "name", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" },
+      { "inputs": [], "name": "symbol", "outputs": [{ "internalType": "string", "name": "", "type": "string" }], "stateMutability": "view", "type": "function" }
     ];
+
     const LINEA_CHAIN_ID = 59141;
 
     let provider;
-    let localStealthLeaves = [];
-
-    function saveLeaves() {
-      localStorage.setItem("anon_leaves", JSON.stringify(localStealthLeaves));
-    }
-
-    function loadLeaves() {
-      const saved = localStorage.getItem("anon_leaves");
-      if (saved) {
-        localStealthLeaves = JSON.parse(saved);
-      }
-    }
 
     async function ensureLinea() {
       const chainId = await window.ethereum.request({ method: "eth_chainId" });
@@ -71,27 +58,14 @@
       }
     }
 
-    function generateStealthAddress(userAddress, randomSalt) {
-      return ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [userAddress, randomSalt])
-      );
-    }
-
-    function generateMerkleProof(stealthHash) {
-      const tree = new MerkleTree(localStealthLeaves, ethers.utils.keccak256, { sortPairs: true });
-      const proof = tree.getProof(stealthHash);
-      return proof.map(p => p.data);
-    }
-
     async function connectWallet() {
       if (!window.ethereum) {
-        alert("MetaMask not installed.");
+        alert("MetaMask or Rabby not installed.");
         return;
       }
       provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       await ensureLinea();
-      loadLeaves();
       alert("Wallet connected.");
     }
 
@@ -107,28 +81,6 @@
       alert("Minted 1 ANON.");
     }
 
-    async function registerStealth() {
-      if (!provider) {
-        alert("Connect wallet first.");
-        return;
-      }
-      const signer = provider.getSigner();
-      const userAddress = await signer.getAddress();
-      const randomSalt = ethers.BigNumber.from(ethers.utils.randomBytes(32));
-      const stealthHash = generateStealthAddress(userAddress, randomSalt);
-
-      if (!localStealthLeaves.includes(stealthHash)) {
-        localStealthLeaves.push(stealthHash);
-        saveLeaves();
-      }
-
-      const proof = generateMerkleProof(stealthHash);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const tx = await contract.registerStealthAddress(stealthHash, proof);
-      await tx.wait();
-      alert("Stealth address registered.");
-    }
-
     async function burnAnon() {
       if (!provider) {
         alert("Connect wallet first.");
@@ -137,35 +89,43 @@
 
       const signer = provider.getSigner();
       const userAddress = await signer.getAddress();
-      const randomSalt = ethers.BigNumber.from(ethers.utils.randomBytes(32));
-      const stealthHash = generateStealthAddress(userAddress, randomSalt);
-
-      if (!localStealthLeaves.includes(stealthHash)) {
-        localStealthLeaves.push(stealthHash);
-        saveLeaves();
-      }
-
-      const proof = generateMerkleProof(stealthHash);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-      const wallet = ethers.Wallet.createRandom();
-      const stealthRecipient = wallet.address;
+      // Generate entropy
+      const entropy = ethers.BigNumber.from(ethers.utils.randomBytes(32));
+
+      // Generate stealth hash
+      const stealthHash = ethers.utils.keccak256(
+        ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [userAddress, entropy])
+      );
+
+      // Derive stealth private key and stealth recipient address
+      const stealthPrivateKeyPreimage = ethers.utils.keccak256(
+        ethers.utils.defaultAbiCoder.encode(
+          ["address", "bytes32", "uint256", "uint256"],
+          [userAddress, stealthHash, entropy, (await provider.getNetwork()).chainId]
+        )
+      );
+      const stealthPrivateKey = stealthPrivateKeyPreimage;
+      const stealthWallet = new ethers.Wallet(stealthPrivateKey);
+      const stealthRecipient = stealthWallet.address;
 
       const burnId = await contract.burnIds(userAddress);
       const { chainId } = await provider.getNetwork();
+
       const messageHash = ethers.utils.solidityKeccak256(
         ["address", "bytes32", "address", "uint256", "uint256"],
         [userAddress, stealthHash, CONTRACT_ADDRESS, burnId, chainId]
       );
+
       const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
 
       let estimatedGasCost;
       try {
         estimatedGasCost = await contract.estimateGas.requestBurn(
           stealthHash,
-          stealthRecipient,
           signature,
-          randomSalt,
+          entropy,
           { value: ethers.utils.parseEther("0.002") }
         );
       } catch (e) {
@@ -177,9 +137,8 @@
 
       const tx = await contract.requestBurn(
         stealthHash,
-        stealthRecipient,
         signature,
-        randomSalt,
+        entropy,
         {
           value: totalValue,
           gasLimit: estimatedGasCost.add(ethers.BigNumber.from("50000"))
@@ -187,13 +146,22 @@
       );
 
       await tx.wait();
-      alert("Burn complete: " + tx.hash);
+
+      // Download stealth private key
+      const element = document.createElement('a');
+      const file = new Blob([stealthPrivateKey], { type: 'text/plain' });
+      element.href = URL.createObjectURL(file);
+      element.download = "stealth_private_key.txt";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+
+      alert("Burn complete. Save your downloaded stealth private key.");
     }
 
     window.addEventListener('load', () => {
       document.getElementById("connect").onclick = connectWallet;
       document.getElementById("mint").onclick = mintToken;
-      document.getElementById("register").onclick = registerStealth;
       document.getElementById("burn").onclick = burnAnon;
     });
   </script>
