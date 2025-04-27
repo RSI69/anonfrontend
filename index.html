@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>ANONToken DApp</title>
+  <script src="https://cdn.jsdelivr.net/npm/merkletreejs@0.2.16/dist/merkletreejs.min.js"></script>
 </head>
 <body>
   <h1>ANONToken</h1>
   <button id="connect">Connect Wallet</button><br><br>
   <button id="mint">Mint 1 ANON (0.00000001 ETH)</button><br><br>
+  <button id="register">Register Stealth Address</button><br><br>
   <button id="burn">Burn ANON for Stealth Withdraw</button>
 
   <script type="module">
     import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
     const CONTRACT_ADDRESS = "0x7a90474451219Dff38a45227907035189499300e";
+
     const CONTRACT_ABI = [
       { "inputs": [ { "internalType": "address", "name": "spender", "type": "address" }, { "internalType": "uint256", "name": "value", "type": "uint256" } ], "name": "approve", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "nonpayable", "type": "function" },
       { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" },
@@ -32,15 +35,17 @@
 
     const LINEA_CHAIN_ID = 59141;
 
+    let provider;
+    let localStealthLeaves = [];
+
     async function ensureLinea() {
-      const provider = window.ethereum;
-      const { chainId } = await provider.request({ method: "eth_chainId" });
+      const chainId = await window.ethereum.request({ method: "eth_chainId" });
       if (parseInt(chainId, 16) !== LINEA_CHAIN_ID) {
         try {
-          await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xe705" }] });
+          await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0xe705" }] });
         } catch (err) {
           if (err.code === 4902) {
-            await provider.request({
+            await window.ethereum.request({
               method: "wallet_addEthereumChain",
               params: [{
                 chainId: "0xe705",
@@ -58,27 +63,80 @@
     }
 
     function generateStealthAddress(userAddress) {
-      // Generate a unique stealth address using the user's wallet address
-      return ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["address"], [userAddress]));
+      return ethers.utils.keccak256(
+        ethers.utils.defaultAbiCoder.encode(["address"], [userAddress])
+      );
     }
 
-    async function requestAnonBurn({ provider, userAddress }) {
+    function generateMerkleProof(stealthHash) {
+      const tree = new MerkleTree(localStealthLeaves, ethers.utils.keccak256, { sortPairs: true });
+      const proof = tree.getProof(stealthHash);
+      return proof.map(p => p.data);
+    }
+
+    async function connectWallet() {
+      if (!window.ethereum) {
+        alert("MetaMask not installed.");
+        return;
+      }
+      provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);
+      await ensureLinea();
+      alert("Wallet connected.");
+    }
+
+    async function mintToken() {
+      if (!provider) {
+        alert("Connect wallet first.");
+        return;
+      }
       const signer = provider.getSigner();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+      const tx = await contract.mint({ value: ethers.utils.parseEther("0.00000001") });
+      await tx.wait();
+      alert("Minted 1 ANON.");
+    }
+
+    async function registerStealth() {
+      if (!provider) {
+        alert("Connect wallet first.");
+        return;
+      }
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
       const stealthHash = generateStealthAddress(userAddress);
-      const isRegistered = await contract.registeredStealthAddresses(stealthHash);
-      if (!isRegistered) {
-        // Register the stealth address automatically
-        const merkleProof = [] // You need to generate the proof off-chain
-        const tx = await contract.registerStealthAddress(stealthHash, merkleProof);
-        await tx.wait();
-        alert('Stealth address registered successfully.');
+      if (!localStealthLeaves.includes(stealthHash)) {
+        localStealthLeaves.push(stealthHash);
       }
+
+      const proof = generateMerkleProof(stealthHash);
+
+      const tx = await contract.registerStealthAddress(stealthHash, proof);
+      await tx.wait();
+      alert("Stealth address registered.");
+    }
+
+    async function burnAnon() {
+      if (!provider) {
+        alert("Connect wallet first.");
+        return;
+      }
+      const signer = provider.getSigner();
+      const userAddress = await signer.getAddress();
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+      const stealthHash = generateStealthAddress(userAddress);
+      if (!localStealthLeaves.includes(stealthHash)) {
+        alert("Stealth address not registered locally.");
+        return;
+      }
+
+      const proof = generateMerkleProof(stealthHash);
 
       const burnId = await contract.burnIds(userAddress);
       const { chainId } = await provider.getNetwork();
-
       const messageHash = ethers.utils.solidityKeccak256(
         ["address", "bytes32", "address", "uint256", "uint256"],
         [userAddress, stealthHash, CONTRACT_ADDRESS, burnId, chainId]
@@ -89,10 +147,11 @@
       const dynamicFee = await contract.calculateFee(estimatedGasCost);
       const totalValue = estimatedGasCost.add(dynamicFee);
 
-      const entropy = generateEntropy();
+      const entropy = Math.floor(Math.random() * 1e18);
+
       const gasEstimate = await contract.estimateGas.requestBurn(
         stealthHash,
-        userAddress,  // Using the user's wallet as the recipient
+        userAddress,
         signature,
         entropy,
         { value: totalValue }
@@ -110,56 +169,14 @@
       );
 
       await tx.wait();
-      return {
-        hash: tx.hash,
-        explorer: `https://sepolia.lineascan.build/tx/${tx.hash}`
-      };
+      alert("Burn complete: " + tx.hash);
     }
 
     window.addEventListener('load', () => {
-      const connectBtn = document.getElementById("connect");
-      const mintBtn = document.getElementById("mint");
-      const burnBtn = document.getElementById("burn");
-
-      let provider;
-
-      connectBtn.onclick = async () => {
-        if (!window.ethereum) {
-          alert("MetaMask not installed.");
-          return;
-        }
-        try {
-          provider = new ethers.providers.Web3Provider(window.ethereum);
-          await ensureLinea();
-          await provider.send("eth_requestAccounts", []);
-          alert("Wallet connected.");
-        } catch (error) {
-          console.error(error);
-          alert("Failed to connect wallet.");
-        }
-      };
-
-      mintBtn.onclick = async () => {
-        if (!provider) {
-          alert("Connect wallet first.");
-          return;
-        }
-        const signer = provider.getSigner();
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-        const tx = await contract.mint({ value: ethers.utils.parseEther("0.00000001") });
-        await tx.wait();
-        alert("Minted 1 ANON.");
-      };
-
-      burnBtn.onclick = async () => {
-        if (!provider) {
-          alert("Connect wallet first.");
-          return;
-        }
-        const userAddress = await provider.getSigner().getAddress();
-        const tx = await requestAnonBurn({ provider, userAddress });
-        alert("Burn complete: " + tx.explorer);
-      };
+      document.getElementById("connect").onclick = connectWallet;
+      document.getElementById("mint").onclick = mintToken;
+      document.getElementById("register").onclick = registerStealth;
+      document.getElementById("burn").onclick = burnAnon;
     });
   </script>
 </body>
