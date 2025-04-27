@@ -8,7 +8,6 @@
   <h1>ANONToken</h1>
   <button id="connect">Connect Wallet</button><br><br>
   <button id="mint">Mint 1 ANON (0.00000001 ETH)</button><br><br>
-  <input id="stealth" placeholder="Stealth address" size="50"/>
   <button id="burn">Burn ANON for Stealth Withdraw</button>
 
   <script type="module">
@@ -58,27 +57,23 @@
       }
     }
 
-    function generateEntropy() {
-      const array = new Uint32Array(8);
-      window.crypto.getRandomValues(array);
-      return BigInt("0x" + Array.from(array).map(x => x.toString(16).padStart(8, '0')).join(""));
+    function generateStealthAddress(userAddress) {
+      // Generate a unique stealth address using the user's wallet address
+      return ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(["address"], [userAddress]));
     }
 
-    function hashStealthAddress(stealthRecipient) {
-      return ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(["address"], [stealthRecipient])
-      );
-    }
-
-    async function requestAnonBurn({ provider, userAddress, stealthRecipient, merkleProof }) {
+    async function requestAnonBurn({ provider, userAddress }) {
       const signer = provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-      const stealthHash = hashStealthAddress(stealthRecipient);
+      const stealthHash = generateStealthAddress(userAddress);
       const isRegistered = await contract.registeredStealthAddresses(stealthHash);
       if (!isRegistered) {
+        // Register the stealth address automatically
+        const merkleProof = [] // You need to generate the proof off-chain
         const tx = await contract.registerStealthAddress(stealthHash, merkleProof);
         await tx.wait();
+        alert('Stealth address registered successfully.');
       }
 
       const burnId = await contract.burnIds(userAddress);
@@ -97,7 +92,7 @@
       const entropy = generateEntropy();
       const gasEstimate = await contract.estimateGas.requestBurn(
         stealthHash,
-        stealthRecipient,
+        userAddress,  // Using the user's wallet as the recipient
         signature,
         entropy,
         { value: totalValue }
@@ -105,7 +100,7 @@
 
       const tx = await contract.requestBurn(
         stealthHash,
-        stealthRecipient,
+        userAddress,
         signature,
         entropy,
         {
@@ -161,10 +156,8 @@
           alert("Connect wallet first.");
           return;
         }
-        const stealth = document.getElementById("stealth").value;
         const userAddress = await provider.getSigner().getAddress();
-        const merkleProof = [];
-        const tx = await requestAnonBurn({ provider, userAddress, stealthRecipient: stealth, merkleProof });
+        const tx = await requestAnonBurn({ provider, userAddress });
         alert("Burn complete: " + tx.explorer);
       };
     });
