@@ -109,7 +109,6 @@
       )
     );
     const stealthPrivateKey = stealthPrivateKeyPreimage;
-    const stealthWallet = new ethers.Wallet(stealthPrivateKey);
   
     await contract.registerStealthAddress(stealthHash, []);
   
@@ -123,12 +122,12 @@
   
     const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
   
-    // --- Fixed prepay ---
-    const gasUnits = ethers.BigNumber.from("140000"); // conservative safe gas
-    const gasPrice = await provider.getGasPrice();    // current gas price
+    // --- Proper prepay ---
+    const gasUnits = ethers.BigNumber.from("140000"); // conservative estimate
+    const gasPrice = await provider.getGasPrice();
     const gasCost = gasUnits.mul(gasPrice);
   
-    const dynamicFee = await contract.calculateFee(gasCost);
+    const dynamicFee = gasCost.mul(30).div(10000); // manually compute fee
     const totalValue = gasCost.add(dynamicFee);
   
     const tx = await contract.requestBurn(
@@ -137,7 +136,7 @@
       entropy,
       {
         value: totalValue,
-        gasLimit: gasUnits.add(ethers.BigNumber.from("30000")) // buffer to not fail
+        gasLimit: gasUnits.add(ethers.BigNumber.from("30000")) // buffer
       }
     );
   
@@ -153,6 +152,7 @@
   
     alert("Burn complete. Save your downloaded stealth private key.");
   }
+
   
 
     window.addEventListener('load', () => {
