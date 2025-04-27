@@ -81,83 +81,77 @@
       alert("Minted 1 ANON.");
     }
 
-    async function burnAnon() {
-      if (!provider) {
-        alert("Connect wallet first.");
-        return;
-      }
-
-      const signer = provider.getSigner();
-      const userAddress = await signer.getAddress();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-      // Generate entropy
-      const entropy = ethers.BigNumber.from(ethers.utils.randomBytes(32));
-
-      // Generate stealth hash
-      const stealthHash = ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [userAddress, entropy])
-      );
-
-      // Derive stealth private key and stealth recipient address
-      const stealthPrivateKeyPreimage = ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(
-          ["address", "bytes32", "uint256", "uint256"],
-          [userAddress, stealthHash, entropy, (await provider.getNetwork()).chainId]
-        )
-      );
-      const stealthPrivateKey = stealthPrivateKeyPreimage;
-      const stealthWallet = new ethers.Wallet(stealthPrivateKey);
-      const stealthRecipient = stealthWallet.address;
-
-      const burnId = await contract.burnIds(userAddress);
-      const { chainId } = await provider.getNetwork();
-
-      const messageHash = ethers.utils.solidityKeccak256(
-        ["address", "bytes32", "address", "uint256", "uint256"],
-        [userAddress, stealthHash, CONTRACT_ADDRESS, burnId, chainId]
-      );
-
-      const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
-
-      let estimatedGasCost;
-      try {
-        estimatedGasCost = await contract.estimateGas.requestBurn(
-          stealthHash,
-          signature,
-          entropy,
-          { value: ethers.utils.parseEther("0.002") }
-        );
-      } catch (e) {
-        estimatedGasCost = ethers.BigNumber.from("500000");
-      }
-
-      const dynamicFee = await contract.calculateFee(estimatedGasCost);
-      const totalValue = estimatedGasCost.add(dynamicFee);
-
-      const tx = await contract.requestBurn(
+  async function burnAnon() {
+    if (!provider) {
+      alert("Connect wallet first.");
+      return;
+    }
+  
+    const signer = provider.getSigner();
+    const userAddress = await signer.getAddress();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+  
+    const entropy = ethers.BigNumber.from(ethers.utils.randomBytes(32));
+    const stealthHash = ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(["address", "uint256"], [userAddress, entropy])
+    );
+  
+    const stealthPrivateKeyPreimage = ethers.utils.keccak256(
+      ethers.utils.defaultAbiCoder.encode(
+        ["address", "bytes32", "uint256", "uint256"],
+        [userAddress, stealthHash, entropy, (await provider.getNetwork()).chainId]
+      )
+    );
+    const stealthPrivateKey = stealthPrivateKeyPreimage;
+    const stealthWallet = new ethers.Wallet(stealthPrivateKey);
+    const stealthRecipient = stealthWallet.address;
+  
+    const burnId = await contract.burnIds(userAddress);
+    const { chainId } = await provider.getNetwork();
+  
+    const messageHash = ethers.utils.solidityKeccak256(
+      ["address", "bytes32", "address", "uint256", "uint256"],
+      [userAddress, stealthHash, CONTRACT_ADDRESS, burnId, chainId]
+    );
+  
+    const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
+  
+    let estimatedGasCost;
+    try {
+      estimatedGasCost = await contract.estimateGas.requestBurn(
         stealthHash,
         signature,
-        entropy,
-        {
-          value: totalValue,
-          gasLimit: estimatedGasCost.add(ethers.BigNumber.from("50000"))
-        }
+        entropy
       );
-
-      await tx.wait();
-
-      // Download stealth private key
-      const element = document.createElement('a');
-      const file = new Blob([stealthPrivateKey], { type: 'text/plain' });
-      element.href = URL.createObjectURL(file);
-      element.download = "stealth_private_key.txt";
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
-
-      alert("Burn complete. Save your downloaded stealth private key.");
+    } catch (e) {
+      estimatedGasCost = ethers.BigNumber.from("500000");
     }
+  
+    const dynamicFee = await contract.calculateFee(estimatedGasCost);
+    const totalValue = estimatedGasCost.add(dynamicFee);
+  
+    const tx = await contract.requestBurn(
+      stealthHash,
+      signature,
+      entropy,
+      {
+        value: totalValue,
+        gasLimit: estimatedGasCost.add(ethers.BigNumber.from("50000"))
+      }
+    );
+  
+    await tx.wait();
+  
+    const element = document.createElement('a');
+    const file = new Blob([stealthPrivateKey], { type: 'text/plain' });
+    element.href = URL.createObjectURL(file);
+    element.download = "stealth_private_key.txt";
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  
+    alert("Burn complete. Save your downloaded stealth private key.");
+  }
 
     window.addEventListener('load', () => {
       document.getElementById("connect").onclick = connectWallet;
