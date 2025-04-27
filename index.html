@@ -15,6 +15,7 @@
 
     const CONTRACT_ADDRESS = "0x50c9EF1EFCe5D76590eeaF2e4B197E46C1E9E305";
     const CONTRACT_ABI = [
+    const CONTRACT_ABI = [
       { "inputs": [], "name": "mint", "outputs": [], "stateMutability": "payable", "type": "function" },
       { "inputs": [
           { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" },
@@ -22,6 +23,12 @@
           { "internalType": "uint256", "name": "userEntropy", "type": "uint256" }
         ],
         "name": "requestBurn", "outputs": [], "stateMutability": "payable", "type": "function"
+      },
+      { "inputs": [
+          { "internalType": "bytes32", "name": "stealthHash", "type": "bytes32" },
+          { "internalType": "bytes32[]", "name": "proof", "type": "bytes32[]" }
+        ],
+        "name": "registerStealthAddress", "outputs": [], "stateMutability": "nonpayable", "type": "function"
       },
       { "inputs": [], "name": "mintPrice", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
       { "inputs": [{ "internalType": "address", "name": "account", "type": "address" }], "name": "balanceOf", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
