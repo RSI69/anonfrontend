@@ -155,19 +155,30 @@ async function burnAnon() {
       ['address', 'bytes32', 'uint256', 'uint256'],
       [user, stealthHash, entropy, chainId]
     );
-    
     const privKey = ethers.utils.keccak256(packed);
-
-    /* --- 5a.  Best-effort clipboard copy --------------------------- */
-    try { await navigator.clipboard.writeText(privKey); } catch {/* ignore */ }
-
-    /* --- 5b.  Fallback file download for normal browsers ---------- */
-    const blob = new Blob([privKey.slice(2)], { type: 'text/plain' });
-    const link = Object.assign(document.createElement('a'), {
-      href     : URL.createObjectURL(blob),
-      download : 'stealth_private_key.txt'
-    });
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    
+    /* ----------------------------------------------------------------
+       6.  Show the private key in a secure modal (no download or copy)
+    ---------------------------------------------------------------- */
+    const modal = document.createElement('div');
+    modal.style = `
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;
+      z-index:9999;font-family:sans-serif;color:#fff;text-align:center;padding:20px;
+    `;
+    modal.innerHTML = `
+      <div style="background:#222;padding:26px 34px;border-radius:10px;max-width:500px">
+        <h2 style="margin-top:0;font-size:20px">Your Private Key</h2>
+        <textarea readonly style="width:100%;height:100px;font-family:monospace;font-size:13px">${privKey}</textarea>
+        <p style="color:#f66;font-size:14px;line-height:1.4;margin:16px 0 10px">
+          ⚠️ This key will not be shown again.<br>
+          Anyone who has this key can steal your ETH.<br>
+          Save it securely. We cannot recover it for you.
+        </p>
+        <button style="margin-top:12px;padding:8px 22px;border:0;border-radius:5px;cursor:pointer" onclick="this.parentNode.parentNode.remove()">Close</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
 
     /* ----------------------------------------------------------------
        6.  User guidance modal (works in Rabby-PC webview, too)
