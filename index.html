@@ -13,21 +13,20 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0x6650FC6f271a1d0653E6c98A22370d4d8aA1B019';
+const CONTRACT = '0xB61416Ae77c3c638864bDbF04b9aB6D2AA5b120C';
 const ABI = [
-  { name:'mint',                      type:'function', stateMutability:'payable', inputs:[], outputs:[] },
-  { name:'requestBurn',               type:'function', stateMutability:'payable',
+  { name:'mint', type:'function', stateMutability:'payable', inputs:[], outputs:[] },
+  { name:'requestBurn', type:'function', stateMutability:'payable',
     inputs:[
-      {name:'stealthHash', type:'bytes32'},
-      {name:'signature',   type:'bytes'},
-      {name:'userEntropy', type:'uint256'}
+      { name:'stealthRecipient', type:'address' },
+      { name:'signature', type:'bytes' },
+      { name:'userEntropy', type:'uint256' }
     ], outputs:[] },
-  { name:'registerStealthAddress',    type:'function', stateMutability:'nonpayable',
+  { name:'registerStealthAddress', type:'function', stateMutability:'nonpayable',
     inputs:[
-      {name:'stealthHash', type:'bytes32'},
-      {name:'proof',       type:'bytes32[]'}
+      { name:'stealthRecipient', type:'address' }
     ], outputs:[] },
-  { name:'burnIds',   type:'function', inputs:[{name:'a',type:'address'}], stateMutability:'view', outputs:[{type:'uint256'}] },
+  { name:'burnIds', type:'function', inputs:[{name:'a',type:'address'}], stateMutability:'view', outputs:[{type:'uint256'}] },
   { name:'mintPrice', type:'function', inputs:[], stateMutability:'view', outputs:[{type:'uint256'}] }
 ];
 
@@ -125,17 +124,18 @@ async function burnAnon() {
     }
 
     /* ----------------------------------------------------------------
-       1.  Generate entropy + stealthHash
-    ---------------------------------------------------------------- */
-    const entropy     = ethers.BigNumber.from(ethers.utils.randomBytes(32));
-    const stealthHash = ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(['address','uint256'], [user, entropy])
-    );
+      1. Step 1: Generate a true random private key
+    ---------------------------------------------------------------- */  
+    const randomBytes = ethers.utils.randomBytes(32);
+    const userEntropy = ethers.BigNumber.from(randomBytes).toString();
+    const privKeyHex = ethers.utils.hexlify(randomBytes);
+    const wallet = new ethers.Wallet(privKeyHex);
+    const stealthRecipient = wallet.address;
 
     /* ----------------------------------------------------------------
        2.  Register stealth address (no Merkle proof required)
     ---------------------------------------------------------------- */
-    const tx1 = await c.registerStealthAddress(stealthHash, []);
+    const tx1 = await c.registerStealthAddress(stealthRecipient);
     await tx1.wait();
 
     /* ----------------------------------------------------------------
@@ -143,36 +143,19 @@ async function burnAnon() {
     ---------------------------------------------------------------- */
     const burnId  = await c.burnIds(user);
     const digest  = ethers.utils.solidityKeccak256(
-      ['address','bytes32','address','uint256','uint256'],
-      [user, stealthHash, CONTRACT, burnId, chainId]
+      ['address','address','address','uint256','uint256'],
+      [user, stealthRecipient, CONTRACT, burnId, chainId]
     );
     const sig = await signer.signMessage(ethers.utils.arrayify(digest));
 
     /* ----------------------------------------------------------------
-       4.  Generate the stealth private key and validate address derivation
+       4.  Send the burn tx (dynamic value — always passes fee check)
     ---------------------------------------------------------------- */
-    const packed = ethers.utils.solidityPack(
-      ['address', 'bytes32', 'uint256', 'uint256'],
-      [user, stealthHash, entropy, chainId]
-    );
-    const privKey = ethers.utils.keccak256(packed);
+    const ABS_FLOOR = ethers.utils.parseEther('0.001'); // contract minimum
     
-    // Create a wallet from the private key to get the address
-    const wallet = new ethers.Wallet(privKey);
-    const derivedAddress = wallet.address;
-    
-    // Debug output - remove in production
-    console.log("Private key:", privKey);
-    console.log("Derived address:", derivedAddress);
-    
-    /* ----------------------------------------------------------------
-       5.  Send the burn tx (dynamic value — always passes fee check)
-    ---------------------------------------------------------------- */
-    const ABS_FLOOR = ethers.utils.parseEther('0.001');     // contract minimum
-    
-    // first estimate requires at least the floor, or it will revert
-    const estGas   = await c.estimateGas.requestBurn(
-      stealthHash, sig, entropy, { value: ABS_FLOOR }
+    // Estimate gas using correct arguments
+    const estGas = await c.estimateGas.requestBurn(
+      stealthRecipient, sig, userEntropy, { value: ABS_FLOOR }
     );
     const gasPrice = await provider.getGasPrice();
     const gasCost  = estGas.mul(gasPrice);                  // wei
@@ -184,13 +167,12 @@ async function burnAnon() {
     if (value.lt(ABS_FLOOR)) value = ABS_FLOOR;
     
     const tx2 = await c.requestBurn(
-      stealthHash, sig, entropy,
-      { value, gasLimit: estGas.add(50_000) }               // +50k buffer
+      stealthRecipient, sig, userEntropy,
+      { value, gasLimit: estGas.add(50_000) }
     );
-    await tx2.wait();
-    
+
     /* ----------------------------------------------------------------
-       6.  Show the private key in a secure modal with better UX
+       5.  Show the private key in a secure modal with better UX
     ---------------------------------------------------------------- */
     const modal = document.createElement('div');
     modal.style = `
@@ -202,10 +184,11 @@ async function burnAnon() {
       <div style="background:#222;padding:26px 34px;border-radius:10px;max-width:560px">
         <h2 style="margin-top:0;font-size:20px">Your Stealth Withdrawal Information</h2>
         <p style="margin:12px 0;font-size:14px">Private Key (required to access your funds):</p>
-        <textarea readonly id="pkeyText" style="width:100%;height:60px;font-family:monospace;font-size:13px;padding:8px">${privKey}</textarea>
+        <textarea readonly id="pkeyText" style="width:100%;height:60px;font-family:monospace;font-size:13px;padding:8px">${privKeyHex}</textarea>
         
         <p style="margin:16px 0 4px;font-size:14px">Address (where funds will be sent):</p>
-        <textarea readonly style="width:100%;height:34px;font-family:monospace;font-size:13px;padding:8px">${derivedAddress}</textarea>
+        <textarea readonly style="width:100%;height:34px;font-family:monospace;font-size:13px;padding:8px">${stealthRecipient}</textarea>
+
         
         <p style="color:#f66;font-size:14px;line-height:1.4;margin:16px 0 10px">
           ⚠️ This key will not be shown again.<br>
@@ -231,7 +214,7 @@ async function burnAnon() {
     };
     
     document.getElementById('downloadPKey').onclick = function() {
-      saveKey(privKey);
+      saveKey(privKeyHex);
       this.textContent = 'Downloaded!';
       setTimeout(() => this.textContent = 'Download Key File', 2000);
     };
