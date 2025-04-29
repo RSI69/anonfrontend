@@ -17,531 +17,32 @@
       --warning: #ff9100;
       --font-mono: 'Courier New', monospace;
     }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', 'Roboto', sans-serif;
-    }
-    
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text);
-      min-height: 100vh;
-      background-image: 
-        radial-gradient(rgba(255, 0, 72, 0.03) 1px, transparent 1px),
-        radial-gradient(rgba(255, 0, 72, 0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      background-position: 0 0, 20px 20px;
-    }
-    
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    .header {
-      margin-bottom: 40px;
-      text-align: center;
-      padding-top: 40px;
-    }
-    
-    .logo {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      font-weight: 700;
-      color: var(--text);
-      text-transform: uppercase;
-      letter-spacing: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .logo span {
-      color: var(--primary);
-    }
-    
-    .logo svg {
-      height: 40px;
-      margin-right: 15px;
-    }
-    
-    .subtitle {
-      font-size: 1rem;
-      color: var(--text-dim);
-      margin-bottom: 30px;
-      font-style: italic;
-    }
-    
-    .panel {
-      background: var(--bg-panel);
-      border-radius: 12px;
-      padding: 30px;
-      margin-bottom: 30px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 0, 72, 0.1);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .panel::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    }
-    
-    .panel-title {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-      color: var(--primary);
-      font-size: 1.2rem;
-      letter-spacing: 1px;
-    }
-    
-    .panel-title i {
-      margin-right: 10px;
-    }
-    
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 30px;
-    }
-    
-    .status-indicator {
-      position: absolute;
-      top: 30px;
-      right: 30px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .status-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background-color: #666;
-      margin-right: 8px;
-    }
-    
-    .status-dot.connected {
-      background-color: var(--success);
-      box-shadow: 0 0 10px var(--success);
-    }
-    
-    .btn {
-      background: var(--secondary);
-      color: var(--text);
-      border: none;
-      border-radius: 8px;
-      padding: 15px 25px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 10px 0;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-      font-weight: 500;
-    }
-    
-    .btn i {
-      margin-right: 10px;
-    }
-    
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #990030);
-      color: white;
-    }
-    
-    .btn-primary::after {
-      content: '';
-      position: absolute;
-      width: 30px;
-      height: 100%;
-      top: 0;
-      left: -40px;
-      background: rgba(255, 255, 255, 0.2);
-      transform: skewX(-20deg);
-      transition: 0.7s;
-      filter: blur(5px);
-    }
-    
-    .btn-primary:hover::after {
-      left: calc(100% + 40px);
-    }
-    
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--text-dim);
-    }
-    
-    .btn-secondary:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-    
-    .info-box {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 8px;
-      padding: 20px;
-      margin: 20px 0;
-      border-left: 3px solid var(--primary);
-    }
-    
-    .info-box p {
-      color: var(--text-dim);
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
-    
-    .steps {
-      counter-reset: step;
-      margin: 30px 0;
-    }
-    
-    .step {
-      position: relative;
-      padding-left: 50px;
-      margin-bottom: 25px;
-    }
-    
-    .step::before {
-      counter-increment: step;
-      content: counter(step);
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 34px;
-      height: 34px;
-      background: var(--secondary);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: var(--primary);
-      border: 1px solid var(--primary);
-    }
-    
-    .step-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-    
-    .step-desc {
-      color: var(--text-dim);
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-    
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--text-dim), transparent);
-      margin: 30px 0;
-      opacity: 0.3;
-    }
-    
-    .footer {
-      text-align: center;
-      margin-top: 60px;
-      padding: 20px 0;
-      font-size: 0.9rem;
-      color: var(--text-dim);
-    }
-    
-    /* Modal Styles */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      backdrop-filter: blur(5px);
-    }
-    
-    .modal-content {
-      background: var(--bg-panel);
-      padding: 35px;
-      border-radius: 10px;
-      max-width: 600px;
-      width: 90%;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 0, 72, 0.2);
-      position: relative;
-    }
-    
-    .modal-title {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      color: var(--primary);
-      text-align: center;
-    }
-    
-    .modal-warning {
-      color: var(--warning);
-      text-align: center;
-      margin: 20px 0;
-      font-size: 0.9rem;
-      padding: 15px;
-      background: rgba(255, 145, 0, 0.1);
-      border-radius: 8px;
-      border: 1px solid rgba(255, 145, 0, 0.3);
-    }
-    
-    .modal-label {
-      color: var(--text);
-      margin: 15px 0 5px;
-      display: block;
-      font-weight: 500;
-    }
-    
-    .modal-input {
-      width: 100%;
-      padding: 12px;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid var(--text-dim);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      resize: none;
-    }
-    
-    .modal-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 30px;
-      gap: 15px;
-    }
-    
-    /* Animation & Visual Effects */
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255, 0, 72, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(255, 0, 72, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 0, 72, 0); }
-    }
-    
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-    
-    /* Console output section */
-    .console {
-      background: rgba(0,0,0,0.3);
-      border-radius: 8px;
-      padding: 20px;
-      margin-top: 20px;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: #9e9e9e;
-      height: 120px;
-      overflow-y: auto;
-      border: 1px solid #333;
-    }
-    
-    .console .log {
-      margin-bottom: 5px;
-    }
-    
-    .console .success {
-      color: var(--success);
-    }
-    
-    .console .error {
-      color: var(--primary);
-    }
-    
-    .console .warning {
-      color: var(--warning);
-    }
-    
-    /* Terminal text animation */
-    .typing::after {
-      content: '|';
-      animation: blink 1s infinite;
-    }
-    
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-    
-    /* Balance display */
-    .balance-display {
-      text-align: center;
-      margin: 30px 0;
-    }
-    
-    .balance-title {
-      font-size: 0.9rem;
-      color: var(--text-dim);
-      margin-bottom: 10px;
-    }
-    
-    .balance-value {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-    
-    .balance-value span {
-      color: var(--primary);
-    }
-    
-    /* Progress indicator */
-    .progress-bar {
-      height: 4px;
-      width: 100%;
-      background: var(--secondary);
-      border-radius: 2px;
-      margin: 20px 0;
-      overflow: hidden;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--primary);
-      border-radius: 2px;
-      transition: width 0.3s ease;
-    }
+    body { background: var(--bg-dark); color: var(--text); font-family: 'Segoe UI', 'Roboto', sans-serif; }
+    button { margin: 10px; padding: 10px 20px; border: none; background: var(--primary); color: white; cursor: pointer; border-radius: 6px; }
+    .console { background: var(--bg-panel); padding: 10px; margin-top: 10px; border-radius: 8px; font-family: var(--font-mono); font-size: 0.9rem; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 10; }
+    .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 10px; max-width: 500px; width: 90%; text-align: center; }
+    textarea { width: 100%; height: 60px; font-family: var(--font-mono); margin-bottom: 10px; background: var(--secondary); color: var(--text); border: none; border-radius: 6px; padding: 10px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1 class="logo">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="45" stroke="#ff0048" stroke-width="2"/>
-          <path d="M30 75L70 25M30 25L70 75" stroke="#ff0048" stroke-width="3"/>
-          <circle cx="50" cy="50" r="15" stroke="#ff0048" stroke-width="2"/>
-        </svg>
-        <span>ANON</span>TOKEN
-      </h1>
-      <p class="subtitle">Stealth transactions. Total privacy. Complete anonymity.</p>
-    </div>
-    
-    <div class="panel">
-      <h2 class="panel-title"><i class="fas fa-plug"></i> Connection</h2>
-      <div class="status-indicator">
-        <div class="status-dot" id="connectionDot"></div>
-        <span id="connectionStatus">Disconnected</span>
-      </div>
-      <p>Connect your wallet to access the ANONToken protocol.</p>
-      <button id="connect" class="btn btn-primary"><i class="fas fa-wallet"></i> Connect Wallet</button>
-      
-      <div id="walletInfo" style="display: none;">
-        <div class="divider"></div>
-        <div class="balance-display">
-          <div class="balance-title">YOUR BALANCE</div>
-          <div class="balance-value"><span id="tokenBalance">0</span> ANON</div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="grid">
-      <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-coins"></i> Acquire Tokens</h2>
-        <p>Mint new ANON tokens to enter the privacy pool.</p>
-        <div class="info-box">
-          <p>Cost per token: <strong>0.00000001 ETH</strong><br>
-          Tokens contribute to the anonymity set size.</p>
-        </div>
-        <button id="mint" class="btn btn-primary" disabled><i class="fas fa-fire-alt"></i> Mint 1 ANON</button>
-        <div class="console" id="mintConsole">
-          <div class="log typing">System ready...</div>
-        </div>
-      </div>
-      
-      <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-mask"></i> Create Stealth Transaction</h2>
-        <p>Convert your tokens into anonymous transactions.</p>
-        <div class="info-box">
-          <p>Your funds will be sent to a single-use stealth address only you can access.</p>
-        </div>
-        <button id="burn" class="btn btn-primary" disabled><i class="fas fa-ghost"></i> Initiate Stealth Transfer</button>
-        <div class="console" id="burnConsole">
-          <div class="log typing">System ready...</div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="panel">
-      <h2 class="panel-title"><i class="fas fa-shield-alt"></i> How It Works</h2>
-      <div class="steps">
-        <div class="step">
-          <div class="step-title">Connect Your Wallet</div>
-          <p class="step-desc">Connect your MetaMask or Rabby wallet to the Linea Sepolia testnet.</p>
-        </div>
-        <div class="step">
-          <div class="step-title">Mint ANON Tokens</div>
-          <p class="step-desc">Acquire ANON tokens to participate in the privacy pool. Each token costs 0.00000001 ETH.</p>
-        </div>
-        <div class="step">
-          <div class="step-title">Initiate Stealth Transfer</div>
-          <p class="step-desc">Burn your ANON tokens to create a stealth transaction. Your funds will be routed through the anonymity set.</p>
-        </div>
-        <div class="step">
-          <div class="step-title">Secure Your Private Key</div>
-          <p class="step-desc">Save the generated private key securely. This is the only way to access your funds on the stealth address.</p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="footer">
-      <p>ANONToken &copy; 2025 | Privacy-First Cryptocurrency | Linea Sepolia Testnet</p>
-    </div>
-  </div>
-  
-  <!-- Modal for stealth key -->
-  <div class="modal" id="stealthModal">
+  <h1>ANONToken – Linea Sepolia Demo</h1>
+  <button id="connect">Connect Wallet</button>
+  <button id="mint" disabled>Mint 1 ANON</button>
+  <button id="burn" disabled>Burn ANON to Stealth</button>
+
+  <div id="mintConsole" class="console">Waiting...</div>
+  <div id="burnConsole" class="console">Waiting...</div>
+
+  <div id="stealthModal" class="modal">
     <div class="modal-content">
-      <div class="modal-title">
-        <i class="fas fa-key"></i> Your Stealth Withdrawal Key
-      </div>
-      
-      <div class="modal-warning">
-        <i class="fas fa-exclamation-triangle"></i> WARNING: This key will not be shown again. Anyone with this key can access your funds. Save it securely.
-      </div>
-      
-      <label class="modal-label">Private Key:</label>
-      <textarea id="pkeyText" class="modal-input" rows="2" readonly></textarea>
-      
-      <label class="modal-label">Stealth Address:</label>
-      <textarea id="stealthAddressText" class="modal-input" rows="2" readonly></textarea>
-      
-      <div class="progress-bar">
-        <div class="progress-fill" id="securityTimer"></div>
-      </div>
-      
-      <div class="modal-buttons">
-        <button id="copyPKey" class="btn btn-secondary"><i class="fas fa-copy"></i> Copy Key</button>
-        <button id="downloadPKey" class="btn btn-secondary"><i class="fas fa-download"></i> Download Key File</button>
-        <button id="closeModal" class="btn btn-primary"><i class="fas fa-check"></i> I've Saved My Key</button>
-      </div>
+      <h2>Stealth Key Info</h2>
+      <textarea id="pkeyText" readonly></textarea>
+      <textarea id="stealthAddressText" readonly></textarea>
+      <br>
+      <button id="copyPKey">Copy Key</button>
+      <button id="downloadPKey">Download Key</button>
+      <button id="closeModal">Close</button>
     </div>
   </div>
 
@@ -551,373 +52,98 @@ import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.es
 const CONTRACT = '0xB61416Ae77c3c638864bDbF04b9aB6D2AA5b120C';
 const ABI = [
   { name:'mint', type:'function', stateMutability:'payable', inputs:[], outputs:[] },
-  { name:'requestBurn', type:'function', stateMutability:'payable',
-    inputs:[
-      { name:'stealthRecipient', type:'address' },
-      { name:'signature', type:'bytes' },
-      { name:'userEntropy', type:'uint256' }
-    ], outputs:[] },
-  { name:'registerStealthAddress', type:'function', stateMutability:'nonpayable',
-    inputs:[
-      { name:'stealthRecipient', type:'address' }
-    ], outputs:[] },
-  { name:'burnIds', type:'function', inputs:[{name:'a',type:'address'}], stateMutability:'view', outputs:[{type:'uint256'}] },
-  { name:'mintPrice', type:'function', inputs:[], stateMutability:'view', outputs:[{type:'uint256'}] },
-  { name:'balanceOf', type:'function', inputs:[{type:'address'}], stateMutability:'view', outputs:[{type:'uint256'}] }
+  { name:'requestBurn', type:'function', stateMutability:'payable', inputs:[{ name:'stealthRecipient', type:'address' }, { name:'signature', type:'bytes' }, { name:'userEntropy', type:'uint256' }], outputs:[] },
+  { name:'registerStealthAddress', type:'function', stateMutability:'nonpayable', inputs:[{ name:'stealthRecipient', type:'address' }], outputs:[] },
+  { name:'burnIds', type:'function', inputs:[{ name:'a', type:'address' }], outputs:[{ type:'uint256' }], stateMutability:'view' },
+  { name:'mintPrice', type:'function', inputs:[], outputs:[{ type:'uint256' }], stateMutability:'view' },
+  { name:'balanceOf', type:'function', inputs:[{ name:'a', type:'address' }], outputs:[{ type:'uint256' }], stateMutability:'view' }
 ];
 
-const LINEA = '0xe705';   // 59141
+const LINEA = '0xe705';
+let provider, signer, contract, currentAccount;
 
-let provider;
-let contract;
-let currentAccount;
-let userBalance = 0;
-
-/* ---------- UI elements ---------- */
-const connectionDot = document.getElementById('connectionDot');
-const connectionStatus = document.getElementById('connectionStatus');
-const walletInfo = document.getElementById('walletInfo');
-const tokenBalance = document.getElementById('tokenBalance');
-const mintBtn = document.getElementById('mint');
-const burnBtn = document.getElementById('burn');
+const connectButton = document.getElementById('connect');
+const mintButton = document.getElementById('mint');
+const burnButton = document.getElementById('burn');
 const mintConsole = document.getElementById('mintConsole');
 const burnConsole = document.getElementById('burnConsole');
 const stealthModal = document.getElementById('stealthModal');
-const securityTimer = document.getElementById('securityTimer');
 const pkeyText = document.getElementById('pkeyText');
 const stealthAddressText = document.getElementById('stealthAddressText');
 
-/* ---------- helpers ---------- */
-function logToConsole(consoleEl, message, type = '') {
-  const log = document.createElement('div');
-  log.className = log ${type};
-  log.textContent = message;
-  
-  // Remove typing class from previous logs
-  const logs = consoleEl.querySelectorAll('.typing');
-  logs.forEach(el => el.classList.remove('typing'));
-  
-  consoleEl.appendChild(log);
-  consoleEl.scrollTop = consoleEl.scrollHeight;
-  
-  return log; // Return the log element for later reference
-}
+function log(el, msg) { el.textContent = msg; }
 
-async function ensureLinea() {
-  const cid = await window.ethereum.request({method:'eth_chainId'});
-  if (cid === LINEA) return true;
-  
-  try {
-    await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:LINEA}]});
-    return true;
-  } catch (e) {
-    if (e.code === 4902) {
-      try {
-        await window.ethereum.request({
-          method:'wallet_addEthereumChain',
-          params:[{
-            chainId:LINEA,
-            chainName:'Linea Sepolia Testnet',
-            rpcUrls:['https://rpc.sepolia.linea.build'],
-            nativeCurrency:{name:'LineaETH',symbol:'LineaETH',decimals:18},
-            blockExplorerUrls:['https://sepolia.lineascan.build']
-          }]
-        });
-        return true;
-      } catch (err) {
-        logToConsole(mintConsole, Failed to add Linea network: ${err.message}, 'error');
-        return false;
-      }
-    } else { 
-      logToConsole(mintConsole, Failed to switch to Linea: ${e.message}, 'error');
-      return false;
-    }
-  }
-}
-
-function saveKey(hex) {
-  // Create a text file with both private key and derived address
-  const wallet = new ethers.Wallet(hex);
-  const content = 
-IMPORTANT - STEALTH WITHDRAWAL KEY
-=================================
-DO NOT SHARE THIS FILE WITH ANYONE
-KEEP THIS FILE SAFE AND SECURE
-
-Private Key: ${hex}
-Address: ${wallet.address}
-
-Instructions:
-1. Import this private key into your wallet when you want to access your funds
-2. Only import when needed, then move funds to your main wallet
-3. Anyone with this key can access your funds
-;
-
-  const blob = new Blob([content], {type:'text/plain'});
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'stealth_key_' + wallet.address.substring(2, 8) + '.txt';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-async function updateBalance() {
-  if (!contract || !currentAccount) return;
-  
-  try {
-    const balance = await contract.balanceOf(currentAccount);
-    userBalance = ethers.utils.formatEther(balance);
-    tokenBalance.textContent = userBalance;
-    
-    // Enable/disable burn button based on balance
-    burnBtn.disabled = parseFloat(userBalance) < 1;
-  } catch (err) {
-    console.error("Error updating balance:", err);
-  }
-}
-
-function startSecurityTimer() {
-  let width = 0;
-  const interval = setInterval(() => {
-    width += 0.5;
-    securityTimer.style.width = ${width}%;
-    
-    if (width >= 100) {
-      clearInterval(interval);
-    }
-  }, 50); // 10s total (50ms * 200)
-}
-
-/* ---------- UI actions ---------- */
 async function connectWallet() {
-  if (!window.ethereum) {
-    logToConsole(mintConsole, 'MetaMask or Rabby not found', 'error');
-    return;
+  provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send('eth_requestAccounts', []);
+  const network = await provider.getNetwork();
+  if (network.chainId !== parseInt(LINEA, 16)) {
+    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: LINEA }] });
   }
-  
-  const connectingLog = logToConsole(mintConsole, 'Connecting to wallet...', 'typing');
-  
-  try {
-    provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-    const accounts = await provider.send('eth_requestAccounts', []);
-    currentAccount = accounts[0];
-    
-    const success = await ensureLinea();
-    if (!success) {
-      connectingLog.textContent = 'Failed to connect to Linea network.';
-      connectingLog.className = 'log error';
-      return;
-    }
-    
-    contract = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
-    
-    // Update UI
-    connectionDot.classList.add('connected');
-    connectionStatus.textContent = Connected: ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)};
-    
-    // Show wallet info
-    walletInfo.style.display = 'block';
-    await updateBalance();
-    
-    // Enable buttons
-    mintBtn.disabled = false;
-    
-    connectingLog.textContent = 'Connected successfully!';
-    connectingLog.className = 'log success';
-    
-    // Setup event listeners for account changes
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
-    
-    logToConsole(mintConsole, 'Ready for transactions', '');
-  } catch (err) {
-    connectingLog.textContent = Connection failed: ${err.message};
-    connectingLog.className = 'log error';
-  }
-}
-
-function handleAccountsChanged(accounts) {
-  if (accounts.length === 0) {
-    // User disconnected
-    disconnectWallet();
-  } else if (accounts[0] !== currentAccount) {
-    currentAccount = accounts[0];
-    logToConsole(mintConsole, Account changed: ${currentAccount.substring(0, 6)}..., '');
-    updateBalance();
-  }
-}
-
-function handleChainChanged() {
-  // Reload the page on chain change
-  window.location.reload();
-}
-
-function disconnectWallet() {
-  currentAccount = null;
-  connectionDot.classList.remove('connected');
-  connectionStatus.textContent = 'Disconnected';
-  walletInfo.style.display = 'none';
-  mintBtn.disabled = true;
-  burnBtn.disabled = true;
-  logToConsole(mintConsole, 'Wallet disconnected', 'warning');
+  signer = provider.getSigner();
+  contract = new ethers.Contract(CONTRACT, ABI, signer);
+  currentAccount = await signer.getAddress();
+  mintButton.disabled = false;
+  burnButton.disabled = false;
+  log(mintConsole, 'Wallet Connected.');
 }
 
 async function mintToken() {
-  if (!provider || !contract) {
-    logToConsole(mintConsole, 'Connect wallet first', 'error');
-    return;
-  }
-  
-  const mintingLog = logToConsole(mintConsole, 'Preparing mint transaction...', 'typing');
-  
-  try {
-    const signer = provider.getSigner();
-    const price = await contract.mintPrice();
-    
-    logToConsole(mintConsole, Minting 1 ANON token for ${ethers.utils.formatEther(price)} ETH, '');
-    
-    const tx = await contract.mint({ value: price });
-    mintingLog.textContent = Transaction submitted. Hash: ${tx.hash.substring(0, 10)}...;
-
-    logToConsole(mintConsole, 'Waiting for confirmation...', 'typing');
-    await tx.wait();
-    
-    logToConsole(mintConsole, 'ANON token minted successfully!', 'success');
-    await updateBalance();
-  } catch (err) {
-    mintingLog.textContent = Mint failed: ${err.message};
-    mintingLog.className = 'log error';
-  }
+  const price = await contract.mintPrice();
+  const tx = await contract.mint({ value: price });
+  await tx.wait();
+  log(mintConsole, 'Minted 1 ANON');
 }
 
 async function burnAnon() {
-  if (!provider || !contract) {
-    logToConsole(burnConsole, 'Connect wallet first', 'error');
+  const balance = await contract.balanceOf(currentAccount);
+  if (balance.lt(ethers.utils.parseEther('1'))) {
+    log(burnConsole, 'Not enough ANON to burn.');
     return;
   }
+  const randomBytes = ethers.utils.randomBytes(32);
+  const userEntropy = ethers.BigNumber.from(randomBytes).toString();
+  const privKeyHex = ethers.utils.hexlify(randomBytes);
+  const stealthWallet = new ethers.Wallet(privKeyHex);
 
-  if (parseFloat(userBalance) < 1) {
-    logToConsole(burnConsole, 'Insufficient ANON balance. You need at least 1 ANON.', 'error');
-    return;
-  }
+  await (await contract.registerStealthAddress(stealthWallet.address)).wait();
+  const burnId = await contract.burnIds(currentAccount);
+  const digest = ethers.utils.solidityKeccak256(['address', 'address', 'address', 'uint256', 'uint256'], [currentAccount, stealthWallet.address, CONTRACT, burnId, (await provider.getNetwork()).chainId]);
+  const signature = await signer.signMessage(ethers.utils.arrayify(digest));
 
-  const burningLog = logToConsole(burnConsole, 'Preparing stealth transfer...', 'typing');
-  
-  try {
-    /* ----------------------------------------------------------------
-       0.  Basic setup
-    ---------------------------------------------------------------- */
-    const signer   = provider.getSigner();
-    const user     = await signer.getAddress();
-    const { chainId } = await provider.getNetwork();     // e.g. 59141
-    
-    // Confirm signer will also be the sender (security check)
-    const senderCheck = await signer.getAddress();
-    if (user.toLowerCase() !== senderCheck.toLowerCase()) {
-      throw new Error("Signer mismatch: unsafe to proceed");
-    }
+  const ABS_FLOOR = ethers.utils.parseEther('0.001');
+  const estGas = await contract.estimateGas.requestBurn(stealthWallet.address, signature, userEntropy, { value: ABS_FLOOR });
+  const tx = await contract.requestBurn(stealthWallet.address, signature, userEntropy, { value: ABS_FLOOR, gasLimit: estGas.add(50000) });
+  await tx.wait();
 
-    /* ----------------------------------------------------------------
-      1. Step 1: Generate a true random private key
-    ---------------------------------------------------------------- */  
-    logToConsole(burnConsole, 'Generating secure stealth address...', '');
-    const randomBytes = ethers.utils.randomBytes(32);
-    const userEntropy = ethers.BigNumber.from(randomBytes).toString();
-    const privKeyHex = ethers.utils.hexlify(randomBytes);
-    const wallet = new ethers.Wallet(privKeyHex);
-    const stealthRecipient = wallet.address;
-
-    /* ----------------------------------------------------------------
-       2.  Register stealth address (no Merkle proof required)
-    ---------------------------------------------------------------- */
-    logToConsole(burnConsole, 'Registering stealth address...', '');
-    const tx1 = await contract.registerStealthAddress(stealthRecipient);
-    await tx1.wait();
-
-    /* ----------------------------------------------------------------
-       3.  Sign burn-authorization digest
-    ----------------------------------------------------------------
-
-    /* ----------------------------------------------------------------
-       3.  Sign burn-authorization digest
-    ---------------------------------------------------------------- */
-    logToConsole(burnConsole, 'Signing authorization message...', '');
-    const burnId = await contract.burnIds(user);
-    const digest = ethers.utils.solidityKeccak256(
-      ['address','address','address','uint256','uint256'],
-      [user, stealthRecipient, CONTRACT, burnId, chainId]
-    );
-    const sig = await signer.signMessage(ethers.utils.arrayify(digest));
-
-    /* ----------------------------------------------------------------
-       4.  Estimate gas and send the burn transaction
-    ---------------------------------------------------------------- */
-    logToConsole(burnConsole, 'Estimating gas for stealth transfer...', '');
-    const ABS_FLOOR = ethers.utils.parseEther('0.001'); // contract minimum floor
-    const estGas = await contract.estimateGas.requestBurn(
-      stealthRecipient, sig, userEntropy, { value: ABS_FLOOR }
-    );
-    const gasPrice = await provider.getGasPrice();
-    const gasCost = estGas.mul(gasPrice);
-    const safety = ethers.utils.parseEther('0.00005'); // small safety margin
-
-    let value = gasCost.mul(1050).div(1000).add(safety);
-    if (value.lt(ABS_FLOOR)) value = ABS_FLOOR;
-
-    logToConsole(burnConsole, 'Submitting stealth transfer transaction...', '');
-    const tx2 = await contract.requestBurn(
-      stealthRecipient, sig, userEntropy,
-      { value, gasLimit: estGas.add(50_000) } // Add gas buffer
-    );
-    burningLog.textContent = Transaction submitted. Hash: ${tx2.hash.substring(0, 10)}...;
-
-    logToConsole(burnConsole, 'Waiting for confirmation...', 'typing');
-    await tx2.wait();
-
-    /* ----------------------------------------------------------------
-       5.  Display modal with stealth key
-    ---------------------------------------------------------------- */
-    logToConsole(burnConsole, 'Stealth transfer initialized successfully!', 'success');
-    
-    pkeyText.value = privKeyHex;
-    stealthAddressText.value = stealthRecipient;
-    stealthModal.style.display = 'flex';
-    startSecurityTimer();
-    await updateBalance();
-    
-  } catch (err) {
-    burningLog.textContent = Burn failed: ${err.message};
-    burningLog.className = 'log error';
-  }
+  pkeyText.value = privKeyHex;
+  stealthAddressText.value = stealthWallet.address;
+  stealthModal.style.display = 'flex';
 }
 
-/* ---------- modal buttons ---------- */
-document.getElementById('copyPKey').onclick = function() {
-  const pkey = document.getElementById('pkeyText');
-  pkey.select();
+document.getElementById('copyPKey').onclick = () => {
+  pkeyText.select();
   document.execCommand('copy');
-  this.textContent = 'Copied!';
-  setTimeout(() => this.textContent = 'Copy Key', 2000);
 };
 
-document.getElementById('downloadPKey').onclick = function() {
-  const hex = document.getElementById('pkeyText').value;
-  saveKey(hex);
-  this.textContent = 'Downloaded!';
-  setTimeout(() => this.textContent = 'Download Key File', 2000);
+document.getElementById('downloadPKey').onclick = () => {
+  const blob = new Blob([`Private Key: ${pkeyText.value}\nAddress: ${stealthAddressText.value}`], { type: 'text/plain' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'stealth_key.txt';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 };
 
-document.getElementById('closeModal').onclick = function() {
+document.getElementById('closeModal').onclick = () => {
   stealthModal.style.display = 'none';
 };
 
-/* ---------- wire buttons ---------- */
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('connect').onclick = connectWallet;
-  document.getElementById('mint')   .onclick = mintToken;
-  document.getElementById('burn')   .onclick = burnAnon;
-});
+connectButton.onclick = connectWallet;
+mintButton.onclick = mintToken;
+burnButton.onclick = burnAnon;
 </script>
+
 </body>
 </html>
