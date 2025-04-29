@@ -58,10 +58,27 @@ async function ensureLinea() {
 }
 
 function saveKey(hex) {
-  const blob = new Blob([hex.slice(2)], {type:'text/plain'});
+  // Create a text file with both private key and derived address
+  const wallet = new ethers.Wallet(hex);
+  const content = 
+`IMPORTANT - STEALTH WITHDRAWAL KEY
+=================================
+DO NOT SHARE THIS FILE WITH ANYONE
+KEEP THIS FILE SAFE AND SECURE
+
+Private Key: ${hex}
+Address: ${wallet.address}
+
+Instructions:
+1. Import this private key into your wallet when you want to access your funds
+2. Only import when needed, then move funds to your main wallet
+3. Anyone with this key can access your funds
+`;
+
+  const blob = new Blob([content], {type:'text/plain'});
   const link = document.createElement('a');
-  link.href  = URL.createObjectURL(blob);
-  link.download = 'stealth_private_key.txt';
+  link.href = URL.createObjectURL(blob);
+  link.download = 'stealth_key_' + wallet.address.substring(2, 8) + '.txt';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -100,6 +117,12 @@ async function burnAnon() {
     const user     = await signer.getAddress();
     const c        = new ethers.Contract(CONTRACT, ABI, signer);
     const { chainId } = await provider.getNetwork();     // e.g. 59141
+    
+    // Confirm signer will also be the sender (security check)
+    const senderCheck = await signer.getAddress();
+    if (user.toLowerCase() !== senderCheck.toLowerCase()) {
+      throw new Error("Signer mismatch: unsafe to proceed");
+    }
 
     /* ----------------------------------------------------------------
        1.  Generate entropy + stealthHash
@@ -125,31 +148,8 @@ async function burnAnon() {
     );
     const sig = await signer.signMessage(ethers.utils.arrayify(digest));
 
-  /* ----------------------------------------------------------------
-     4.  Send the burn tx  (dynamic value — always passes fee check)
-  ---------------------------------------------------------------- */
-  const ABS_FLOOR = ethers.utils.parseEther('0.001');     // contract minimum
-  
-  // first estimate requires at least the floor, or it will revert
-  const estGas   = await c.estimateGas.requestBurn(
-    stealthHash, sig, entropy, { value: ABS_FLOOR }
-  );
-  const gasPrice = await provider.getGasPrice();
-  const gasCost  = estGas.mul(gasPrice);                  // wei
-  const safety   = ethers.utils.parseEther('0.00005');    // small cushion
-  
-  // msg.value ≥ gasCost / 0.997   (because 0.3 % fee)
-  let value = gasCost.mul(1003).div(1000).add(safety);
-  if (value.lt(ABS_FLOOR)) value = ABS_FLOOR;
-  
-  const tx2 = await c.requestBurn(
-    stealthHash, sig, entropy,
-    { value, gasLimit: estGas.add(50_000) }               // +50 k buffer
-  );
-  await tx2.wait();
-
     /* ----------------------------------------------------------------
-       5.  Derive the ACTUAL private key for the stealth address
+       4.  Generate the stealth private key and validate address derivation
     ---------------------------------------------------------------- */
     const packed = ethers.utils.solidityPack(
       ['address', 'bytes32', 'uint256', 'uint256'],
@@ -157,8 +157,40 @@ async function burnAnon() {
     );
     const privKey = ethers.utils.keccak256(packed);
     
+    // Create a wallet from the private key to get the address
+    const wallet = new ethers.Wallet(privKey);
+    const derivedAddress = wallet.address;
+    
+    // Debug output - remove in production
+    console.log("Private key:", privKey);
+    console.log("Derived address:", derivedAddress);
+    
     /* ----------------------------------------------------------------
-       6.  Show the private key in a secure modal (no download or copy)
+       5.  Send the burn tx (dynamic value — always passes fee check)
+    ---------------------------------------------------------------- */
+    const ABS_FLOOR = ethers.utils.parseEther('0.001');     // contract minimum
+    
+    // first estimate requires at least the floor, or it will revert
+    const estGas   = await c.estimateGas.requestBurn(
+      stealthHash, sig, entropy, { value: ABS_FLOOR }
+    );
+    const gasPrice = await provider.getGasPrice();
+    const gasCost  = estGas.mul(gasPrice);                  // wei
+    const safety   = ethers.utils.parseEther('0.00005');    // small cushion
+    
+    // msg.value ≥ gasCost / 0.997   (because 0.3% fee)
+    // Add 50% more safety margin to account for contract's calculation
+    let value = gasCost.mul(1050).div(1000).add(safety);
+    if (value.lt(ABS_FLOOR)) value = ABS_FLOOR;
+    
+    const tx2 = await c.requestBurn(
+      stealthHash, sig, entropy,
+      { value, gasLimit: estGas.add(50_000) }               // +50k buffer
+    );
+    await tx2.wait();
+    
+    /* ----------------------------------------------------------------
+       6.  Show the private key in a secure modal with better UX
     ---------------------------------------------------------------- */
     const modal = document.createElement('div');
     modal.style = `
@@ -167,20 +199,46 @@ async function burnAnon() {
       z-index:9999;font-family:sans-serif;color:#fff;text-align:center;padding:20px;
     `;
     modal.innerHTML = `
-      <div style="background:#222;padding:26px 34px;border-radius:10px;max-width:500px">
-        <h2 style="margin-top:0;font-size:20px">Your Private Key</h2>
-        <textarea readonly style="width:100%;height:100px;font-family:monospace;font-size:13px">${privKey}</textarea>
+      <div style="background:#222;padding:26px 34px;border-radius:10px;max-width:560px">
+        <h2 style="margin-top:0;font-size:20px">Your Stealth Withdrawal Information</h2>
+        <p style="margin:12px 0;font-size:14px">Private Key (required to access your funds):</p>
+        <textarea readonly id="pkeyText" style="width:100%;height:60px;font-family:monospace;font-size:13px;padding:8px">${privKey}</textarea>
+        
+        <p style="margin:16px 0 4px;font-size:14px">Address (where funds will be sent):</p>
+        <textarea readonly style="width:100%;height:34px;font-family:monospace;font-size:13px;padding:8px">${derivedAddress}</textarea>
+        
         <p style="color:#f66;font-size:14px;line-height:1.4;margin:16px 0 10px">
           ⚠️ This key will not be shown again.<br>
           Anyone who has this key can steal your ETH.<br>
           Save it securely. We cannot recover it for you.
         </p>
-        <button style="margin-top:12px;padding:8px 22px;border:0;border-radius:5px;cursor:pointer" onclick="this.parentNode.parentNode.remove()">Close</button>
+        <div style="display:flex;justify-content:space-between;margin-top:20px">
+          <button id="copyPKey" style="padding:8px 16px;border:0;border-radius:5px;cursor:pointer;background:#555">Copy Private Key</button>
+          <button id="downloadPKey" style="padding:8px 16px;border:0;border-radius:5px;cursor:pointer;background:#555">Download Key File</button>
+          <button id="closeModal" style="padding:8px 22px;border:0;border-radius:5px;cursor:pointer;background:#2a6">Close</button>
+        </div>
       </div>
     `;
     document.body.appendChild(modal);
-
-
+    
+    // Wire up the buttons
+    document.getElementById('copyPKey').onclick = function() {
+      const pkey = document.getElementById('pkeyText');
+      pkey.select();
+      document.execCommand('copy');
+      this.textContent = 'Copied!';
+      setTimeout(() => this.textContent = 'Copy Private Key', 2000);
+    };
+    
+    document.getElementById('downloadPKey').onclick = function() {
+      saveKey(privKey);
+      this.textContent = 'Downloaded!';
+      setTimeout(() => this.textContent = 'Download Key File', 2000);
+    };
+    
+    document.getElementById('closeModal').onclick = function() {
+      modal.remove();
+    };
 
   } catch (err) {
     console.error(err);
