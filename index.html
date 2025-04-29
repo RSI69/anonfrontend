@@ -180,27 +180,7 @@ async function burnAnon() {
     `;
     document.body.appendChild(modal);
 
-    /* ----------------------------------------------------------------
-       6.  User guidance modal (works in Rabby-PC webview, too)
-    ---------------------------------------------------------------- */
-    const m = document.createElement('div');
-    m.style = `
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;
-      z-index:9999;font-family:sans-serif;color:#fff;text-align:center;padding:20px;`;
-    m.innerHTML = `
-      <div style="background:#222;padding:26px 34px;border-radius:10px;max-width:420px">
-        <h2 style="margin-top:0;font-size:20px">Private key copied ✅</h2>
-        <p style="margin:14px 0;font-size:15px;line-height:1.45">
-          Press <kbd>Ctrl-V</kbd> → <strong>Import → Private&nbsp;Key</strong> in Rabby now.<br>
-          <span style="color:#f66">Never share this key—whoever owns it owns your ETH.</span>
-        </p>
-        <button id="closeModal" style="margin-top:20px;padding:8px 22px;border:0;border-radius:5px;cursor:pointer">
-          Got it
-        </button>
-      </div>`;
-    document.body.appendChild(m);
-    m.querySelector('#closeModal').onclick = () => m.remove();
+
 
   } catch (err) {
     console.error(err);
