@@ -151,12 +151,12 @@ async function burnAnon() {
     /* ----------------------------------------------------------------
        5.  Derive the ACTUAL private key for the stealth address
     ---------------------------------------------------------------- */
-    const privKey = ethers.utils.keccak256(
-      ethers.utils.defaultAbiCoder.encode(
-        ['address','bytes32','uint256','uint256'],
-        [user, stealthHash, entropy, chainId]
-      )
+    const packed = ethers.utils.solidityPack(
+      ['address', 'bytes32', 'uint256', 'uint256'],
+      [user, stealthHash, entropy, chainId]
     );
+    
+    const privKey = ethers.utils.keccak256(packed);
 
     /* --- 5a.  Best-effort clipboard copy --------------------------- */
     try { await navigator.clipboard.writeText(privKey); } catch {/* ignore */ }
