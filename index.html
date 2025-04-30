@@ -548,8 +548,698 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0x4d54454fdE6aa9f02f1ae3021b23a4c728caa891';
-const ABI = [{"inputs":[{"name":"spender","type":"address"},{"name":"value","type":"uint256"}],"name":"approve","outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"nonpayable","type":"constructor"},{"name":"mint","outputs":[],"stateMutability":"payable","type":"function"},{"name":"registerStealthAddress","inputs":[{"name":"stealthRecipient","type":"address"}],"outputs":[],"stateMutability":"nonpayable","type":"function"},{"name":"requestBurn","inputs":[{"name":"stealthRecipient","type":"address"},{"name":"signature","type":"bytes"},{"name":"userEntropy","type":"uint256"}],"outputs":[],"stateMutability":"payable","type":"function"},{"name":"calculateFee","inputs":[{"name":"amount","type":"uint256"}],"outputs":[{"type":"uint256"}],"stateMutability":"pure","type":"function"},{"name":"burnIds","inputs":[{"name":"","type":"address"}],"outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"mintPrice","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"balanceOf","inputs":[{"name":"account","type":"address"}],"outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"allowance","inputs":[{"name":"owner","type":"address"},{"name":"spender","type":"address"}],"outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"BASE_PROCESS_TIME","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"MIN_DELAY","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"MAX_DELAY","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"RETRY_INTERVAL","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"MIN_ANONYMITY_SET","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"merkleRoot","outputs":[{"type":"bytes32"}],"stateMutability":"view","type":"function"},{"name":"lastProcessedTime","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"feeBasisPoints","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"decimals","outputs":[{"type":"uint8"}],"stateMutability":"view","type":"function"},{"name":"symbol","outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},{"name":"name","outputs":[{"type":"string"}],"stateMutability":"view","type":"function"},{"name":"totalSupply","outputs":[{"type":"uint256"}],"stateMutability":"view","type":"function"},{"name":"stealthAddresses","inputs":[{"name":"","type":"address"},{"name":"","type":"uint256"}],"outputs":[{"type":"address"}],"stateMutability":"view","type":"function"},{"name":"usedSignatures","inputs":[{"name":"","type":"bytes32"}],"outputs":[{"type":"bool"}],"stateMutability":"view","type":"function"},{"name":"transfer","inputs":[{"name":"to","type":"address"},{"name":"value","type":"uint256"}],"outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"name":"transferFrom","inputs":[{"name":"from","type":"address"},{"name":"to","type":"address"},{"name":"value","type":"uint256"}],"outputs":[{"type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"owner","type":"address"},{"indexed":true,"name":"spender","type":"address"},{"indexed":false,"name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"user","type":"address"},{"indexed":false,"name":"amount","type":"uint256"}],"name":"Minted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"newRoot","type":"bytes32"}],"name":"MerkleRootUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"commitmentHash","type":"bytes32"},{"indexed":false,"name":"recipient","type":"address"},{"indexed":false,"name":"refundAmount","type":"uint256"},{"indexed":false,"name":"retryCount","type":"uint8"}],"name":"WithdrawalFailed","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"commitmentHash","type":"bytes32"},{"indexed":false,"name":"amount","type":"uint256"}],"name":"WithdrawalSentToFeeRecipient","type":"event"}];
+const CONTRACT = '0xfd77Ec81Acd75636f2D622D19048e97C19cf06B0';
+const ABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "approve",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"inputs": [],
+		"name": "ECDSAInvalidSignature",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "length",
+				"type": "uint256"
+			}
+		],
+		"name": "ECDSAInvalidSignatureLength",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "s",
+				"type": "bytes32"
+			}
+		],
+		"name": "ECDSAInvalidSignatureS",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "allowance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "needed",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC20InsufficientAllowance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "balance",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "needed",
+				"type": "uint256"
+			}
+		],
+		"name": "ERC20InsufficientBalance",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "approver",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidApprover",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidReceiver",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidSender",
+		"type": "error"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "ERC20InvalidSpender",
+		"type": "error"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Approval",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "newRoot",
+				"type": "bytes32"
+			}
+		],
+		"name": "MerkleRootUpdated",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "mint",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Minted",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "stealthRecipient",
+				"type": "address"
+			}
+		],
+		"name": "registerStealthAddress",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "stealthRecipient",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes",
+				"name": "signature",
+				"type": "bytes"
+			},
+			{
+				"internalType": "uint256",
+				"name": "userEntropy",
+				"type": "uint256"
+			}
+		],
+		"name": "requestBurn",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transfer",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "Transfer",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "transferFrom",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "commitmentHash",
+				"type": "bytes32"
+			},
+			{
+				"indexed": false,
+				"internalType": "address",
+				"name": "recipient",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "refundAmount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint8",
+				"name": "retryCount",
+				"type": "uint8"
+			}
+		],
+		"name": "WithdrawalFailed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes32",
+				"name": "commitmentHash",
+				"type": "bytes32"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "WithdrawalSentToFeeRecipient",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "spender",
+				"type": "address"
+			}
+		],
+		"name": "allowance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "BASE_PROCESS_TIME",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "burnIds",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "calculateFee",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "pure",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "estimateGasCost",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "feeBasisPoints",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "lastProcessedTime",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_DELAY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MAX_RETRY_ATTEMPTS",
+		"outputs": [
+			{
+				"internalType": "uint8",
+				"name": "",
+				"type": "uint8"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "merkleRoot",
+		"outputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MIN_ANONYMITY_SET",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MIN_DELAY",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "mintPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "name",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "RETRY_INTERVAL",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "stealthAddresses",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "symbol",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "totalSupply",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes32",
+				"name": "",
+				"type": "bytes32"
+			}
+		],
+		"name": "usedSignatures",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
 
 const LINEA = '0xe705';   // 59141
 
@@ -781,111 +1471,88 @@ async function burnAnon() {
     logToConsole(burnConsole, 'Connect wallet first', 'error');
     return;
   }
-
   if (parseFloat(userBalance) < 1) {
     logToConsole(burnConsole, 'Insufficient ANON balance. You need at least 1 ANON.', 'error');
     return;
   }
 
   const burningLog = logToConsole(burnConsole, 'Preparing stealth transfer...', 'typing');
-  
+
   try {
-    /* ----------------------------------------------------------------
-       0.  Basic setup
-    ---------------------------------------------------------------- */
-    const signer   = provider.getSigner();
-    const user     = await signer.getAddress();
-    const { chainId } = await provider.getNetwork();     // e.g. 59141
-    
-    // Confirm signer will also be the sender (security check)
-    const senderCheck = await signer.getAddress();
-    if (user.toLowerCase() !== senderCheck.toLowerCase()) {
-      throw new Error("Signer mismatch: unsafe to proceed");
+    // 0. basic setup
+    const signer = provider.getSigner();
+    const user   = await signer.getAddress();
+    const { chainId } = await provider.getNetwork();
+
+    // confirm signer
+    if (user.toLowerCase() !== (await signer.getAddress()).toLowerCase()) {
+      throw new Error('Signer mismatch: unsafe to proceed');
     }
 
-    /* ----------------------------------------------------------------
-      1. Step 1: Generate a true random private key
-    ---------------------------------------------------------------- */  
-    logToConsole(burnConsole, 'Generating secure stealth address...', '');
-    const randomBytes = ethers.utils.randomBytes(32);
-    const userEntropy = ethers.BigNumber.from(randomBytes).toString();
-    const privKeyHex = ethers.utils.hexlify(randomBytes);
-    const wallet = new ethers.Wallet(privKeyHex);
+    // 1. generate non-zero entropy
+    let rb = ethers.utils.randomBytes(32);
+    let entropyBn = ethers.BigNumber.from(rb);
+    if (entropyBn.isZero()) {
+      rb = ethers.utils.randomBytes(32);
+      entropyBn = ethers.BigNumber.from(rb);
+    }
+    const userEntropy = entropyBn.toString();
+
+    // 2. build stealth key + address
+    const privKeyHex = ethers.utils.hexlify(rb);
+    const wallet     = new ethers.Wallet(privKeyHex);
     const stealthRecipient = wallet.address;
 
-    /* ----------------------------------------------------------------
-       2.  Register stealth address (no Merkle proof required)
-    ---------------------------------------------------------------- */
+    // 3. register stealth address
     logToConsole(burnConsole, 'Registering stealth address...', '');
     const tx1 = await contract.registerStealthAddress(stealthRecipient);
+    burningLog.textContent = `Register tx: ${tx1.hash.substring(0,10)}…`;
+    logToConsole(burnConsole, 'Waiting for registration confirmation...', 'typing');
     await tx1.wait();
+    logToConsole(burnConsole, 'Stealth address registered', 'success');
 
-    /* ----------------------------------------------------------------
-       3.  Sign burn-authorization digest
-    ---------------------------------------------------------------- */
+    // 4. create authorization signature
     logToConsole(burnConsole, 'Creating authorization signature...', '');
-    const burnId  = await contract.burnIds(user);
-    const digest  = ethers.utils.solidityKeccak256(
+    const burnId = await contract.burnIds(user);
+    const digest = ethers.utils.solidityKeccak256(
       ['address','address','address','uint256','uint256'],
       [user, stealthRecipient, CONTRACT, burnId, chainId]
     );
     const sig = await signer.signMessage(ethers.utils.arrayify(digest));
 
-    /* ----------------------------------------------------------------
-    // 4. Send the burn tx (dynamic value — always passes fee check)
+    // 5. calculate fee + gas
     logToConsole(burnConsole, 'Calculating transaction fee...', '');
-    
-    // 1) grab the exact on-chain gas cost (EWMA×300k + 25% buffer)
     const gasCost = await contract.estimateGasCost();
-    
-    // 2) pull the contract’s 30 bp fee
-    const feeBp = await contract.feeBasisPoints();            // 30
-    const denom = ethers.BigNumber.from(10_000).sub(feeBp);    // 9970
-    
-    // 3) solve value ≥ gasCost + value*feeBp/10000 ⇒ x = ceil(gasCost*10000/(10000-feeBp))
-    const minValue = gasCost.mul(10_000).add(denom.sub(1)).div(denom);
-    
-    // 4) tiny pad so you never underpay by 1 wei
-    const value = minValue.add(ethers.utils.parseEther('0.00002'));
-    
-    // 5) estimate gasLimit with the real `value`
-    const estGas = await contract.estimateGas.requestBurn(
+    const feeBp   = await contract.feeBasisPoints();
+    const denom   = ethers.BigNumber.from(10000).sub(feeBp);
+    const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
+    const value    = minValue.add(ethers.utils.parseEther('0.00002'));
+    const estGas   = await contract.estimateGas.requestBurn(
       stealthRecipient, sig, userEntropy,
       { value }
     );
-    
+
+    // 6. send burn
     logToConsole(burnConsole, 'Sending burn transaction...', '');
     const tx2 = await contract.requestBurn(
-      stealthRecipient,
-      sig,
-      userEntropy,
-      {
-        value,
-        gasLimit: estGas.add(50_000)
-      }
+      stealthRecipient, sig, userEntropy,
+      { value, gasLimit: estGas.add(50000) }
     );
-
-    burningLog.textContent = `Transaction submitted! Hash: ${tx2.hash.substring(0, 10)}...`;
-    logToConsole(burnConsole, 'Waiting for confirmation...', 'typing');
-    
+    burningLog.textContent = `Burn tx: ${tx2.hash.substring(0,10)}…`;
+    logToConsole(burnConsole, 'Waiting for burn confirmation...', 'typing');
     await tx2.wait();
     logToConsole(burnConsole, 'Stealth transfer complete!', 'success');
-    
-    /* ----------------------------------------------------------------
-       5. Show the private key in the modal
-    ---------------------------------------------------------------- */
-    // Show the modal with key information
+
+    // 7. show the key
     pkeyText.value = privKeyHex;
     stealthAddressText.value = stealthRecipient;
     stealthModal.style.display = 'flex';
     startSecurityTimer();
-    
-    // Update balance after successful burn
+
     await updateBalance();
-    
   } catch (err) {
-    console.error(err);
-    burningLog.textContent = `Burn failed: ${err.message ?? err}`;
+    const msg = err.message || err;
+    burningLog.textContent = `Burn failed: ${msg}`;
     burningLog.className = 'log error';
   }
 }
