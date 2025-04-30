@@ -1503,37 +1503,14 @@ async function burnAnon() {
     const wallet     = new ethers.Wallet(privKeyHex);
     const stealthRecipient = wallet.address;
 
-    // 3. register stealth address
-    logToConsole(burnConsole, 'Registering stealth address...', '');
-    logToConsole(burnConsole, 'Registering stealth address...', '');
-    let tx1;
-    let attempts = 0;
-    let success = false;
-
-    while (!success && attempts < 3) {
-      try {
-        tx1 = await contract.registerStealthAddress(stealthRecipient);
-        burningLog.textContent = `Register tx: ${tx1.hash.substring(0,10)}…`;
-        logToConsole(burnConsole, 'Waiting for confirmation...', 'typing');
-        await tx1.wait();
-        logToConsole(burnConsole, 'Stealth address registered', 'success');
-        success = true;
-      } catch (e) {
-        attempts++;
-        if (attempts >= 3) {
-          throw new Error('Stealth registration failed after 3 attempts');
-        }
-        logToConsole(burnConsole, `Retrying stealth address registration... (Attempt ${attempts + 1})`, 'warning');
-      }
-    }
-
     // 4. create authorization signature
     logToConsole(burnConsole, 'Creating authorization signature...', '');
     const burnId = await contract.burnIds(user);
     const digest = ethers.utils.solidityKeccak256(
-      ['address','address','address','uint256','uint256'],
-      [user, stealthRecipient, CONTRACT, burnId, chainId]
+      ['address','uint256','address','uint256'],
+      [stealthRecipient, burnId, CONTRACT, chainId]
     );
+
     const sig = await signer.signMessage(ethers.utils.arrayify(digest));
 
     // 5. calculate fee + gas
@@ -1544,10 +1521,16 @@ async function burnAnon() {
     const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
     const buffer = gasCost.div(3); // 33% buffer
     const value = minValue.add(buffer);  
-    const rawEstimate = await contract.estimateGas.requestBurn(
-    stealthRecipient, sig, userEntropy,
-    { value }
-    );
+    let rawEstimate;
+    try {
+      rawEstimate = await contract.estimateGas.requestBurn(
+        stealthRecipient, sig, userEntropy,
+        { value }
+      );
+    } catch (e) {
+      logToConsole(burnConsole, 'Gas estimation failed, using manual buffer.', 'warning');
+      rawEstimate = ethers.BigNumber.from(400000); // fallback estimate
+    }
     const estGas = rawEstimate.add(100000);
 
     // 6. send burn
@@ -1560,13 +1543,23 @@ async function burnAnon() {
     logToConsole(burnConsole, 'Waiting for burn confirmation...', 'typing');
     await tx2.wait();
     logToConsole(burnConsole, 'Stealth transfer complete!', 'success');
-    logToConsole(burnConsole, 'Stealth withdrawal queued. Funds released after 1–12 hours once 50 burns are reached.', 'warning');
-
-    // Calculate and show anonymity set progress
+    
     const [start, end] = await Promise.all([
       contract.withdrawalStart(),
       contract.withdrawalEnd()
     ]);
+
+    if (end.sub(start).toNumber() === 50) {
+      try {
+        await contract.processWithdrawals();
+        logToConsole(burnConsole, 'Triggered batch withdrawal.', 'success');
+       } catch (e) {
+        logToConsole(burnConsole, `processWithdrawals failed: ${e.message}`, 'warning');
+      }
+    }
+
+    logToConsole(burnConsole, 'Stealth withdrawal queued. Funds released after 1–12 hours once 50 burns are reached.', 'warning');
+
     const filled = end.sub(start).toNumber();
     const progressMsg = `Current batch progress: ${filled}/50 filled.`;
     logToConsole(burnConsole, progressMsg, '');
