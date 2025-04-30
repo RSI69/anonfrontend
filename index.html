@@ -441,7 +441,7 @@
         </svg>
         <span>ANON</span>TOKEN
       </h1>
-      <p class="subtitle">Stealth transactions. Total privacy. Complete anonymity.</p>
+      <p class="subtitle">Financial privacy is a human right.</p>
     </div>
     
     <div class="panel">
@@ -450,13 +450,13 @@
         <div class="status-dot" id="connectionDot"></div>
         <span id="connectionStatus">Disconnected</span>
       </div>
-      <p>Connect your wallet to access the ANONToken protocol.</p>
+      <p>Connect your wallet to access ANONToken.</p>
       <button id="connect" class="btn btn-primary"><i class="fas fa-wallet"></i> Connect Wallet</button>
       
       <div id="walletInfo" style="display: none;">
         <div class="divider"></div>
         <div class="balance-display">
-          <div class="balance-title">YOUR BALANCE</div>
+          <div class="balance-title">ANON Token Balance</div>
           <div class="balance-value"><span id="tokenBalance">0</span> ANON</div>
         </div>
       </div>
@@ -464,11 +464,11 @@
     
     <div class="grid">
       <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-coins"></i> Acquire Tokens</h2>
-        <p>Mint new ANON tokens to enter the privacy pool.</p>
+        <h2 class="panel-title"><i class="fas fa-coins"></i> Begin Anonymization of Ethereum</h2>
+        <p>Mint 1 ANON token to begin anonymizing your ETH.</p>
         <div class="info-box">
           <p>Cost per token: <strong>0.00000001 ETH</strong><br>
-          Tokens contribute to the anonymity set size.</p>
+          Linea Testnet v.Alpha.</p>
         </div>
         <button id="mint" class="btn btn-primary" disabled><i class="fas fa-fire-alt"></i> Mint 1 ANON</button>
         <div class="console" id="mintConsole">
@@ -477,12 +477,12 @@
       </div>
       
       <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-mask"></i> Create Stealth Transaction</h2>
-        <p>Convert your tokens into anonymous transactions.</p>
+        <h2 class="panel-title"><i class="fas fa-mask"></i> Burn & Queue Stealth Withdrawal</h2>
+        <p>Anonymize your Ethereum on Linea.</p>
         <div class="info-box">
-          <p>Your funds will be sent to a single-use stealth address only you can access.</p>
+          <p>Your funds will be sent to a stealth address only you can access.</p>
         </div>
-        <button id="burn" class="btn btn-primary" disabled><i class="fas fa-ghost"></i> Initiate Stealth Transfer</button>
+        <button id="burn" class="btn btn-primary" disabled><i class="fas fa-ghost"></i> Burn 1 ANON</button>
         <div class="console" id="burnConsole">
           <div class="log typing">System ready...</div>
         </div>
@@ -490,7 +490,7 @@
     </div>
     
     <div class="panel">
-      <h2 class="panel-title"><i class="fas fa-shield-alt"></i> How It Works</h2>
+      <h2 class="panel-title"><i class="fas fa-shield-alt"></i> User Flow </h2>
       <div class="steps">
         <div class="step">
           <div class="step-title">Connect Your Wallet</div>
@@ -498,21 +498,21 @@
         </div>
         <div class="step">
           <div class="step-title">Mint ANON Tokens</div>
-          <p class="step-desc">Acquire ANON tokens to participate in the privacy pool. Each token costs 0.00000001 ETH.</p>
+          <p class="step-desc">Mint an ANON token for 0.00000001 ETH.</p>
         </div>
         <div class="step">
           <div class="step-title">Initiate Stealth Transfer</div>
-          <p class="step-desc">Burn your ANON tokens to create a stealth transaction. Your funds will be routed through the anonymity set.</p>
+          <p class="step-desc">Burn your ANON tokens to queue an anonymous withdrawal. 0.00000001 ETH - 0.3% Fee - Gas is sent to your stealth wallet after a 1-12 hour delay, and once 50 total burns are queued.</p>
         </div>
         <div class="step">
-          <div class="step-title">Secure Your Private Key</div>
-          <p class="step-desc">Save the generated private key securely. This is the only way to access your funds on the stealth address.</p>
+          <div class="step-title">Secure Your Private Key and Wait</div>
+          <p class="step-desc">Save the private key securely. This is the only way to access your funds sent to your stealth address. Wait for 1-12 hours after 50 burns are queued. </p>
         </div>
       </div>
     </div>
     
     <div class="footer">
-      <p>ANONToken &copy; 2025 | Privacy-First Cryptocurrency | Linea Sepolia Testnet</p>
+      <p>ANONToken &copy; 2025 | Privacy dApp | Linea Sepolia Testnet</p>
     </div>
   </div>
   
@@ -520,11 +520,11 @@
   <div class="modal" id="stealthModal">
     <div class="modal-content">
       <div class="modal-title">
-        <i class="fas fa-key"></i> Your Stealth Withdrawal Key
+        <i class="fas fa-key"></i> Your Private Key
       </div>
       
       <div class="modal-warning">
-        <i class="fas fa-exclamation-triangle"></i> WARNING: This key will not be shown again. Anyone with this key can access your funds. Save it securely.
+        <i class="fas fa-exclamation-triangle"></i> WARNING: This key will not be shown again. Losing or compromising it also means losing access to the ETH sent to your stealth address.
       </div>
       
       <label class="modal-label">Private Key:</label>
@@ -548,7 +548,7 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0xEeca04E3D9652472de5977269B01Ed4C51FDf3ef';
+const CONTRACT = '0xFA8B3562Af98Cc15CE7Af72A4b3Fd65eE0226b55';
 const ABI = [
 	{
 		"inputs": [
@@ -1240,7 +1240,7 @@ const ABI = [
 		"type": "function"
 	}
 ]
-
+	
 const LINEA = '0xe705';   // 59141
 
 let provider;
@@ -1505,11 +1505,27 @@ async function burnAnon() {
 
     // 3. register stealth address
     logToConsole(burnConsole, 'Registering stealth address...', '');
-    const tx1 = await contract.registerStealthAddress(stealthRecipient);
-    burningLog.textContent = `Register tx: ${tx1.hash.substring(0,10)}…`;
-    logToConsole(burnConsole, 'Waiting for registration confirmation...', 'typing');
-    await tx1.wait();
-    logToConsole(burnConsole, 'Stealth address registered', 'success');
+    logToConsole(burnConsole, 'Registering stealth address...', '');
+    let tx1;
+    let attempts = 0;
+    let success = false;
+
+    while (!success && attempts < 3) {
+      try {
+        tx1 = await contract.registerStealthAddress(stealthRecipient);
+        burningLog.textContent = `Register tx: ${tx1.hash.substring(0,10)}…`;
+        logToConsole(burnConsole, 'Waiting for confirmation...', 'typing');
+        await tx1.wait();
+        logToConsole(burnConsole, 'Stealth address registered', 'success');
+        success = true;
+      } catch (e) {
+        attempts++;
+        if (attempts >= 3) {
+          throw new Error('Stealth registration failed after 3 attempts');
+        }
+        logToConsole(burnConsole, `Retrying stealth address registration... (Attempt ${attempts + 1})`, 'warning');
+      }
+    }
 
     // 4. create authorization signature
     logToConsole(burnConsole, 'Creating authorization signature...', '');
@@ -1528,10 +1544,11 @@ async function burnAnon() {
     const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
     const buffer = gasCost.div(3); // 33% buffer
     const value = minValue.add(buffer);  
-    const estGas   = await contract.estimateGas.requestBurn(
-      stealthRecipient, sig, userEntropy,
-      { value }
+    const rawEstimate = await contract.estimateGas.requestBurn(
+    stealthRecipient, sig, userEntropy,
+    { value }
     );
+    const estGas = rawEstimate.add(100000);
 
     // 6. send burn
     logToConsole(burnConsole, 'Sending burn transaction...', '');
@@ -1543,6 +1560,16 @@ async function burnAnon() {
     logToConsole(burnConsole, 'Waiting for burn confirmation...', 'typing');
     await tx2.wait();
     logToConsole(burnConsole, 'Stealth transfer complete!', 'success');
+    logToConsole(burnConsole, 'Stealth withdrawal queued. Funds released after 1–12 hours once 50 burns are reached.', 'warning');
+
+    // Calculate and show anonymity set progress
+    const [start, end] = await Promise.all([
+      contract.withdrawalStart(),
+      contract.withdrawalEnd()
+    ]);
+    const filled = end.sub(start).toNumber();
+    const progressMsg = `Current batch progress: ${filled}/50 filled.`;
+    logToConsole(burnConsole, progressMsg, '');
 
     // 7. show the key
     pkeyText.value = privKeyHex;
