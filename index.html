@@ -1526,7 +1526,8 @@ async function burnAnon() {
     const feeBp   = await contract.feeBasisPoints();
     const denom   = ethers.BigNumber.from(10000).sub(feeBp);
     const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
-    const value    = minValue.add(ethers.utils.parseEther('0.00002'));
+    const buffer = gasCost.div(3); // 33% buffer
+    const value = minValue.add(buffer);  
     const estGas   = await contract.estimateGas.requestBurn(
       stealthRecipient, sig, userEntropy,
       { value }
