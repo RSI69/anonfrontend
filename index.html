@@ -464,7 +464,7 @@
     
     <div class="grid">
       <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-coins"></i> Begin Anonymization of Ethereum</h2>
+        <h2 class="panel-title"><i class="fas fa-coins"></i> Mint ANON Token (Required for Privacy Transfer)</h2>
         <p>Mint 1 ANON token to begin anonymizing your ETH.</p>
         <div class="info-box">
           <p>Cost per token: <strong>0.00000001 ETH</strong><br>
@@ -477,7 +477,7 @@
       </div>
       
       <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-mask"></i> Burn & Queue Stealth Withdrawal</h2>
+        <h2 class="panel-title"><i class="fas fa-mask"></i>Send ETH Anonymously (Burn 1 ANON)</h2>
         <p>Anonymize your Ethereum on Linea.</p>
         <div class="info-box">
           <p title="A 0.3% fee and gas pool prepayment are deducted from the ETH you send.">Your funds will be sent to a stealth address only you can access.</p>
@@ -549,7 +549,7 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0xDFD5E696b90B6c65fEf11B4F62ac0FD2E6163f02';
+const CONTRACT = '0xa19e572e3581c1eEcb5626860a180130D263B3C5';
 const ABI = [
 	{
 		"inputs": [],
@@ -1338,7 +1338,7 @@ async function updateBalance() {
     // Enable/disable burn button based on balance
     burnBtn.disabled = parseFloat(userBalance) < 1;
   } catch (err) {
-    console.error("Error updating balance:", err);
+    logToConsole(mintConsole, "Failed to update token balance.", "error");
   }
 }
 
@@ -1469,108 +1469,65 @@ async function burnAnon() {
   const burningLog = logToConsole(burnConsole, 'Preparing stealth transfer...', 'typing');
 
   try {
-    // 0. basic setup
     const signer = provider.getSigner();
-    const user   = await signer.getAddress();
+    const user = await signer.getAddress();
     const { chainId } = await provider.getNetwork();
 
-    // confirm signer
-    if (user.toLowerCase() !== (await signer.getAddress()).toLowerCase()) {
-      throw new Error('Signer mismatch: unsafe to proceed');
-    }
+    // ENTROPY + KEY (never log)
+    const entropyBytes = ethers.utils.randomBytes(32);
+    const entropyBN = ethers.BigNumber.from(entropyBytes);
+    if (entropyBN.isZero()) throw new Error('Zero entropy is unsafe');
+    const entropy = entropyBN.toString();
+    const stealthWallet = new ethers.Wallet(entropyBytes);
+    const stealthAddress = stealthWallet.address;
 
-    // 1. generate non-zero entropy
-    let rb = ethers.utils.randomBytes(32);
-    let entropyBn = ethers.BigNumber.from(rb);
-    if (entropyBn.isZero()) {
-      rb = ethers.utils.randomBytes(32);
-      entropyBn = ethers.BigNumber.from(rb);
-    }
-    const userEntropy = entropyBn.toString();
+    // ESTIMATE VALUE
+		const gasCost = await contract.estimateGasCost();
+		const feeBp   = await contract.feeBasisPoints();
+		const denom   = ethers.BigNumber.from(10000).sub(feeBp);
+		
+		const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
+		const buffer   = gasCost.div(3); // 33% buffer
+		const value    = minValue.add(buffer);
 
-    // 2. build stealth key + address
-    const privKeyHex = ethers.utils.hexlify(rb);
-    const wallet     = new ethers.Wallet(privKeyHex);
-    const stealthRecipient = wallet.address;
-    const value = minValue.add(buffer);  
-
-    // 4. create authorization signature
-    logToConsole(burnConsole, 'Creating authorization signature...', '');
+    // SIGN COMMITMENT (digest not exposed)
     const burnId = await contract.burnIds(user);
     const digest = ethers.utils.solidityKeccak256(
       ['address','uint256','address','uint256','uint256','uint256'],
-      [stealthRecipient, burnId, CONTRACT, chainId, value.toString(), userEntropy.toString()]
+      [stealthAddress, burnId, CONTRACT, chainId, value.toString(), entropy]
     );
+    const signature = await signer.signMessage(ethers.utils.arrayify(digest));
 
-    const sig = await signer.signMessage(ethers.utils.arrayify(digest));
-
-    // 5. calculate fee + gas
-    logToConsole(burnConsole, 'Calculating transaction fee...', '');
-    const gasCost = await contract.estimateGasCost();
-    const feeBp   = await contract.feeBasisPoints();
-    const denom   = ethers.BigNumber.from(10000).sub(feeBp);
-    const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
-    const buffer = gasCost.div(3); // 33% buffer
-	const value = minValue.add(buffer);
-    let rawEstimate;
+    // GAS SAFETY BUFFER
+    let estGas;
     try {
-      rawEstimate = await contract.estimateGas.requestBurn(
-        stealthRecipient, sig, userEntropy,
-        { value }
-      );
-    } catch (e) {
-      logToConsole(burnConsole, 'Gas estimation failed, using manual buffer.', 'warning');
-      rawEstimate = ethers.BigNumber.from(400000); // fallback estimate
+      estGas = await contract.estimateGas.requestBurn(stealthAddress, signature, entropy, { value });
+    } catch {
+      estGas = ethers.BigNumber.from(400000); // fallback
     }
-    const estGas = rawEstimate.add(100000);
+    const finalGasLimit = estGas.add(100000);
 
-    // 6. send burn
+    // SEND TX
     logToConsole(burnConsole, 'Sending burn transaction...', '');
-    const tx2 = await contract.requestBurn(
-      stealthRecipient, sig, userEntropy,
-      { value, gasLimit: estGas.add(50000) }
-    );
-    burningLog.textContent = `Burn tx: ${tx2.hash.substring(0,10)}…`;
-    logToConsole(burnConsole, 'Waiting for burn confirmation...', 'typing');
-    await tx2.wait();
+    const tx = await contract.requestBurn(stealthAddress, signature, entropy, {
+      value,
+      gasLimit: finalGasLimit
+    });
+    burningLog.textContent = `Burn tx: ${tx.hash.substring(0, 10)}…`;
+
+    logToConsole(burnConsole, 'Waiting for confirmation...', 'typing');
+    await tx.wait();
     logToConsole(burnConsole, 'Stealth transfer complete!', 'success');
-    
-    const [start, end] = await Promise.all([
-      contract.withdrawalStart(),
-      contract.withdrawalEnd()
-    ]);
 
-    if (end.sub(start).toNumber() === 50) {
-      const batchId = Math.floor(start.toNumber() / 50);
-      const batchCaller = await contract.batchCaller(batchId);
-      if (currentAccount.toLowerCase() === batchCaller.toLowerCase()) {
-        try {
-          await contract.processWithdrawals();
-          logToConsole(burnConsole, 'Triggered batch withdrawal.', 'success');
-        } catch (e) {
-          logToConsole(burnConsole, `processWithdrawals failed: ${e.message}`, 'warning');
-        }
-      } else {
-        logToConsole(burnConsole, 'Batch is full, but you are not the last burner. Waiting for authorized user to process.', 'warning');
-      }
-    }
-
-    logToConsole(burnConsole, 'Stealth withdrawal queued. Funds released after 1–12 hours once 50 burns are reached.', 'warning');
-
-    const filled = end.sub(start).toNumber();
-    const progressMsg = `Current batch progress: ${filled}/50 filled.`;
-    logToConsole(burnConsole, progressMsg, '');
-
-    // 7. show the key
-    pkeyText.value = privKeyHex;
-    stealthAddressText.value = stealthRecipient;
+    // SHOW KEY ONLY AFTER SUCCESS
+    pkeyText.value = entropyBytes;
+    stealthAddressText.value = stealthAddress;
     stealthModal.style.display = 'flex';
     startSecurityTimer();
 
     await updateBalance();
   } catch (err) {
-    const msg = err.message || err;
-    burningLog.textContent = `Burn failed: ${msg}`;
+    burningLog.textContent = `Burn failed: ${err.message || err}`;
     burningLog.className = 'log error';
   }
 }
