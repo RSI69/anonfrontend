@@ -480,9 +480,9 @@
         <h2 class="panel-title"><i class="fas fa-mask"></i> Burn & Queue Stealth Withdrawal</h2>
         <p>Anonymize your Ethereum on Linea.</p>
         <div class="info-box">
-          <p>Your funds will be sent to a stealth address only you can access.</p>
+          <p title="A 0.3% fee and gas pool prepayment are deducted from the ETH you send.">Your funds will be sent to a stealth address only you can access.</p>
         </div>
-        <button id="burn" class="btn btn-primary" disabled><i class="fas fa-ghost"></i> Burn 1 ANON</button>
+        <button id="burn" class="btn btn-primary" disabled title="Burn 1 ANON to anonymously queue ETH for withdrawal to a stealth address."><i class="fas fa-ghost"></i> Burn 1 ANON</button>
         <div class="console" id="burnConsole">
           <div class="log typing">System ready...</div>
         </div>
@@ -502,11 +502,11 @@
         </div>
         <div class="step">
           <div class="step-title">Initiate Stealth Transfer</div>
-          <p class="step-desc">Burn your ANON tokens to queue an anonymous withdrawal. 0.00000001 ETH - 0.3% Fee - Gas is sent to your stealth wallet after a 1-12 hour delay, and once 50 total burns are queued.</p>
+          <p class="step-desc" title="Withdrawals only process once 50 users have burned to preserve anonymity.">Burn your ANON tokens to queue an anonymous withdrawal. 0.00000001 ETH - 0.3% Fee - Gas is sent to your stealth wallet after a 1-12 hour delay, and once 50 total burns are queued.</p>
         </div>
         <div class="step">
           <div class="step-title">Secure Your Private Key and Wait</div>
-          <p class="step-desc">Save the private key securely. This is the only way to access your funds sent to your stealth address. Wait for 1-12 hours after 50 burns are queued. </p>
+          <p class="step-desc" title="ETH is sent after a random delay between 1–12 hours to unlink timing metadata.">Save the private key securely. This is the only way to access your funds sent to your stealth address. Wait for 1-12 hours after 50 burns are queued. </p>
         </div>
       </div>
     </div>
@@ -523,14 +523,15 @@
         <i class="fas fa-key"></i> Your Private Key
       </div>
       
-      <div class="modal-warning">
-        <i class="fas fa-exclamation-triangle"></i> WARNING: This key will not be shown again. Losing or compromising it also means losing access to the ETH sent to your stealth address.
-      </div>
+    <div class="modal-warning">
+      <i class="fas fa-exclamation-triangle"></i> WARNING: This key will not be shown again. Losing or compromising it also means losing access to the ETH sent to your stealth address.<br><br>
+      Do <strong>NOT</strong> use on public or compromised devices.
+    </div>
       
-      <label class="modal-label">Private Key:</label>
+      <label class="modal-label" title="This private key controls your stealth wallet. Keep it secret—anyone with this key can access your funds.">Private Key:</label>
       <textarea id="pkeyText" class="modal-input" rows="2" readonly></textarea>
       
-      <label class="modal-label">Stealth Address:</label>
+      <label class="modal-label" title="The stealth address is where your anonymized ETH will be sent. Import it to MetaMask to access your funds.">Stealth Address:</label>
       <textarea id="stealthAddressText" class="modal-input" rows="2" readonly></textarea>
       
       <div class="progress-bar">
@@ -1502,13 +1503,14 @@ async function burnAnon() {
     const privKeyHex = ethers.utils.hexlify(rb);
     const wallet     = new ethers.Wallet(privKeyHex);
     const stealthRecipient = wallet.address;
+    const value = minValue.add(buffer);  
 
     // 4. create authorization signature
     logToConsole(burnConsole, 'Creating authorization signature...', '');
     const burnId = await contract.burnIds(user);
     const digest = ethers.utils.solidityKeccak256(
-      ['address','uint256','address','uint256'],
-      [stealthRecipient, burnId, CONTRACT, chainId]
+      ['address','uint256','address','uint256','uint256','uint256'],
+      [stealthRecipient, burnId, CONTRACT, chainId, value.toString(), userEntropy.toString()]
     );
 
     const sig = await signer.signMessage(ethers.utils.arrayify(digest));
@@ -1520,7 +1522,7 @@ async function burnAnon() {
     const denom   = ethers.BigNumber.from(10000).sub(feeBp);
     const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
     const buffer = gasCost.div(3); // 33% buffer
-    const value = minValue.add(buffer);  
+	const value = minValue.add(buffer);
     let rawEstimate;
     try {
       rawEstimate = await contract.estimateGas.requestBurn(
@@ -1550,11 +1552,17 @@ async function burnAnon() {
     ]);
 
     if (end.sub(start).toNumber() === 50) {
-      try {
-        await contract.processWithdrawals();
-        logToConsole(burnConsole, 'Triggered batch withdrawal.', 'success');
-       } catch (e) {
-        logToConsole(burnConsole, `processWithdrawals failed: ${e.message}`, 'warning');
+      const batchId = Math.floor(start.toNumber() / 50);
+      const batchCaller = await contract.batchCaller(batchId);
+      if (currentAccount.toLowerCase() === batchCaller.toLowerCase()) {
+        try {
+          await contract.processWithdrawals();
+          logToConsole(burnConsole, 'Triggered batch withdrawal.', 'success');
+        } catch (e) {
+          logToConsole(burnConsole, `processWithdrawals failed: ${e.message}`, 'warning');
+        }
+      } else {
+        logToConsole(burnConsole, 'Batch is full, but you are not the last burner. Waiting for authorized user to process.', 'warning');
       }
     }
 
