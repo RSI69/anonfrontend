@@ -549,7 +549,7 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0xE7FAb936CfAe4e8a5a991c283Ff4e04E5B339C01';
+const CONTRACT = '0xE93c81f7d0Dc5fa3605a4c0a90601415C520E411';
 const ABI = [
 	{
 		"inputs": [],
@@ -1496,9 +1496,7 @@ async function burnAnon() {
 	  ['address','uint256','address','uint256','uint256','uint256'],
 	  [stealthAddress, burnId, CONTRACT, chainId, value.toString(), entropy]
 	);
-	const prefix = "\x19Ethereum Signed Message:\n32";
-	const signedHash = ethers.utils.keccak256(ethers.utils.solidityPack(["string", "bytes32"], [prefix, messageHash]));
-	const signature = await signer.signMessage(ethers.utils.arrayify(signedHash));
+	const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
 
     // GAS SAFETY BUFFER
     let estGas;
