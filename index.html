@@ -1482,13 +1482,22 @@ async function burnAnon() {
     const stealthAddress = stealthWallet.address;
 
     // ESTIMATE VALUE
-		const gasCost = await contract.estimateGasCost();
-		const feeBp   = await contract.feeBasisPoints();
-		const denom   = ethers.BigNumber.from(10000).sub(feeBp);
-		
-		const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
-		const buffer   = gasCost.div(3); // 33% buffer
-		const value = minValue;
+	const gasCost      = await contract.estimateGasCost();             // 300k * gasPrice
+	const price        = gasCost.div(300_000);                         // ≈ current gasPrice
+	const fixedGas     = ethers.BigNumber.from(450_000);
+	const fixedGasCost = price.mul(fixedGas);                          // 450k * gasPrice
+	
+	const feeBp        = await contract.feeBasisPoints();              // e.g. 30
+	const denom        = ethers.BigNumber.from(10_000).sub(feeBp);     // 10000 – feeBp
+	
+	// we need msg.value * (denom/10000) ≥ fixedGasCost
+	// ⇒ msg.value ≥ fixedGasCost * 10000 / denom
+	const minValue = fixedGasCost
+			    .mul(10_000)
+			    .add(denom.sub(1))   // round up division
+			    .div(denom);
+	
+	const value = minValue;
 
     // SIGN COMMITMENT (digest not exposed)
     const burnId = await contract.burnIds(user);
