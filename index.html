@@ -1488,7 +1488,7 @@ async function burnAnon() {
 		
 		const minValue = gasCost.mul(10000).add(denom.sub(1)).div(denom);
 		const buffer   = gasCost.div(3); // 33% buffer
-		const value    = minValue.add(buffer);
+		const value = minValue;
 
     // SIGN COMMITMENT (digest not exposed)
     const burnId = await contract.burnIds(user);
