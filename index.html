@@ -549,7 +549,7 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0xE93c81f7d0Dc5fa3605a4c0a90601415C520E411';
+const CONTRACT = '0x166135Ca6237af19c6302fca0659bAbe7f539900';
 const ABI = [
 	{
 		"inputs": [],
@@ -1224,6 +1224,25 @@ const ABI = [
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "userLastMint",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
