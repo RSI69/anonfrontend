@@ -549,7 +549,7 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0x5ee1A42df5f05f3032a58AD34eA4Aa8108dB2061';
+const CONTRACT = '0x7E3E6A4F748Fb62943aBa5D440115d5CEe503Af7';
 const ABI = [
 	{
 		"inputs": [
@@ -572,19 +572,6 @@ const ABI = [
 				"type": "bool"
 			}
 		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "commitmentHash",
-				"type": "bytes32"
-			}
-		],
-		"name": "commitBurn",
-		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -735,25 +722,6 @@ const ABI = [
 		"anonymous": false,
 		"inputs": [
 			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "who",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "bytes32",
-				"name": "commitmentHash",
-				"type": "bytes32"
-			}
-		],
-		"name": "CommitReceived",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
 				"indexed": false,
 				"internalType": "bytes32",
 				"name": "newRoot",
@@ -799,22 +767,22 @@ const ABI = [
 	{
 		"inputs": [
 			{
-				"internalType": "address[]",
-				"name": "stealthRecipients",
-				"type": "address[]"
+				"internalType": "address",
+				"name": "stealthRecipient",
+				"type": "address"
 			},
 			{
-				"internalType": "uint256[]",
-				"name": "userEntropies",
-				"type": "uint256[]"
+				"internalType": "bytes",
+				"name": "signature",
+				"type": "bytes"
 			},
 			{
-				"internalType": "bytes[]",
-				"name": "signatures",
-				"type": "bytes[]"
+				"internalType": "uint256",
+				"name": "userEntropy",
+				"type": "uint256"
 			}
 		],
-		"name": "revealBatch",
+		"name": "requestBurn",
 		"outputs": [],
 		"stateMutability": "payable",
 		"type": "function"
@@ -1062,19 +1030,6 @@ const ABI = [
 	},
 	{
 		"inputs": [],
-		"name": "commitCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "decimals",
 		"outputs": [
 			{
@@ -1282,25 +1237,6 @@ const ABI = [
 				"type": "address"
 			}
 		],
-		"name": "userCommitment",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
 		"name": "userLastMint",
 		"outputs": [
 			{
@@ -1338,7 +1274,7 @@ const stealthAddressText = document.getElementById('stealthAddressText');
 /* ---------- helpers ---------- */
 function logToConsole(consoleEl, message, type = '') {
   const log = document.createElement('div');
-  log.className = `log ${type}`;
+  log.className = log ${type};
   log.textContent = message;
   
   // Remove typing class from previous logs
@@ -1373,11 +1309,11 @@ async function ensureLinea() {
         });
         return true;
       } catch (err) {
-        logToConsole(mintConsole, `Failed to add Linea network: ${err.message}`, 'error');
+        logToConsole(mintConsole, Failed to add Linea network: ${err.message}, 'error');
         return false;
       }
     } else { 
-      logToConsole(mintConsole, `Failed to switch to Linea: ${e.message}`, 'error');
+      logToConsole(mintConsole, Failed to switch to Linea: ${e.message}, 'error');
       return false;
     }
   }
@@ -1387,7 +1323,7 @@ function saveKey(hex) {
   // Create a text file with both private key and derived address
   const wallet = new ethers.Wallet(hex);
   const content = 
-`IMPORTANT - STEALTH WITHDRAWAL KEY
+IMPORTANT - STEALTH WITHDRAWAL KEY
 =================================
 DO NOT SHARE THIS FILE WITH ANYONE
 KEEP THIS FILE SAFE AND SECURE
@@ -1399,7 +1335,7 @@ Instructions:
 1. Import this private key into your wallet when you want to access your funds
 2. Only import when needed, then move funds to your main wallet
 3. Anyone with this key can access your funds
-`;
+;
 
   const blob = new Blob([content], {type:'text/plain'});
   const link = document.createElement('a');
@@ -1429,7 +1365,7 @@ function startSecurityTimer() {
   let width = 0;
   const interval = setInterval(() => {
     width += 0.5;
-    securityTimer.style.width = `${width}%`;
+    securityTimer.style.width = ${width}%;
     
     if (width >= 100) {
       clearInterval(interval);
@@ -1462,7 +1398,7 @@ async function connectWallet() {
     
     // Update UI
     connectionDot.classList.add('connected');
-    connectionStatus.textContent = `Connected: ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)}`;
+    connectionStatus.textContent = Connected: ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)};
     
     // Show wallet info
     walletInfo.style.display = 'block';
@@ -1480,7 +1416,7 @@ async function connectWallet() {
     
     logToConsole(mintConsole, 'Ready for transactions', '');
   } catch (err) {
-    connectingLog.textContent = `Connection failed: ${err.message}`;
+    connectingLog.textContent = Connection failed: ${err.message};
     connectingLog.className = 'log error';
   }
 }
@@ -1491,7 +1427,7 @@ function handleAccountsChanged(accounts) {
     disconnectWallet();
   } else if (accounts[0] !== currentAccount) {
     currentAccount = accounts[0];
-    logToConsole(mintConsole, `Account changed: ${currentAccount.substring(0, 6)}...`, '');
+    logToConsole(mintConsole, Account changed: ${currentAccount.substring(0, 6)}..., '');
     updateBalance();
   }
 }
@@ -1523,10 +1459,10 @@ async function mintToken() {
     const signer = provider.getSigner();
     const price = await contract.mintPrice();
     
-    logToConsole(mintConsole, `Minting 1 ANON token for ${ethers.utils.formatEther(price)} ETH`, '');
+    logToConsole(mintConsole, Minting 1 ANON token for ${ethers.utils.formatEther(price)} ETH, '');
     
     const tx = await contract.mint({ value: price });
-    mintingLog.textContent = `Transaction submitted. Hash: ${tx.hash.substring(0, 10)}...`;
+    mintingLog.textContent = Transaction submitted. Hash: ${tx.hash.substring(0, 10)}...;
 
     logToConsole(mintConsole, 'Waiting for confirmation...', 'typing');
     await tx.wait();
@@ -1534,7 +1470,7 @@ async function mintToken() {
     logToConsole(mintConsole, 'ANON token minted successfully!', 'success');
     await updateBalance();
   } catch (err) {
-    mintingLog.textContent = `Mint failed: ${err.message}`;
+    mintingLog.textContent = Mint failed: ${err.message};
     mintingLog.className = 'log error';
   }
 }
@@ -1600,13 +1536,21 @@ async function burnAnon() {
 	}
 	const finalGasLimit = estGas.add(100000);
 
-	// DEBUG: log exactly what we're about to send
-	console.log('requestBurn →', {
+	// 1) simulate the call to get the revert reason
+try {
+  await contract.callStatic.requestBurn(
 	stealthAddress,
 	signature,
 	entropy,
-	value: value.toString()
-	});
+	{ value }
+  );
+} catch (simError) {
+  // show the real revert message
+  const msg = simError.error?.message || simError.message;
+  burningLog.textContent = Simulation failed: ${msg};
+  burningLog.className = 'log error';
+  return;
+}
 
     // SEND TX
     logToConsole(burnConsole, 'Sending burn transaction...', '');
@@ -1614,7 +1558,7 @@ async function burnAnon() {
       value,
       gasLimit: finalGasLimit
     });
-    burningLog.textContent = `Burn tx: ${tx.hash.substring(0, 10)}…`;
+    burningLog.textContent = Burn tx: ${tx.hash.substring(0, 10)}…;
 
     logToConsole(burnConsole, 'Waiting for confirmation...', 'typing');
     await tx.wait();
@@ -1629,7 +1573,7 @@ async function burnAnon() {
 
     await updateBalance();
   } catch (err) {
-    burningLog.textContent = `Burn failed: ${err.message || err}`;
+    burningLog.textContent = Burn failed: ${err.message || err};
     burningLog.className = 'log error';
   }
 }
