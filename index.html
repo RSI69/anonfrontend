@@ -1546,9 +1546,10 @@ try {
     logToConsole(burnConsole, 'Stealth transfer complete!', 'success');
 
     // SHOW KEY ONLY AFTER SUCCESS
-    pkeyText.value = entropyBytes;
-    stealthAddressText.value = stealthAddress;
-    stealthModal.style.display = 'flex';
+	const privateKeyHex = stealthWallet.privateKey;  // "0xabc123…"
+	pkeyText.value        = privateKeyHex;
+	stealthAddressText.value = stealthAddress;
+	stealthModal.style.display = 'flex';
     startSecurityTimer();
 
     await updateBalance();
