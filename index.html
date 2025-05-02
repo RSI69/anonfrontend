@@ -1481,7 +1481,7 @@ async function burnAnon() {
     const stealthWallet = new ethers.Wallet(entropyBytes);
     const stealthAddress = stealthWallet.address;
 
-    // ESTIMATE VALUE
+	// ESTIMATE VALUE (your existing logic)
 	const gasCost      = await contract.estimateGasCost();             // 300k * gasPrice
 	const price        = gasCost.div(300_000);                         // ≈ current gasPrice
 	const fixedGas     = ethers.BigNumber.from(450_000);
@@ -1490,14 +1490,15 @@ async function burnAnon() {
 	const feeBp        = await contract.feeBasisPoints();              // e.g. 30
 	const denom        = ethers.BigNumber.from(10_000).sub(feeBp);     // 10000 – feeBp
 	
-	// we need msg.value * (denom/10000) ≥ fixedGasCost
-	// ⇒ msg.value ≥ fixedGasCost * 10000 / denom
+	// compute the bare minimum to cover gas+fee
 	const minValue = fixedGasCost
-			    .mul(10_000)
-			    .add(denom.sub(1))   // round up division
-			    .div(denom);
+	              .mul(10_000)
+	              .add(denom.sub(1))   // round up
+	              .div(denom);
 	
-	const value = minValue;
+	// THEN enforce the contract’s 0.001 ETH floor:
+	const MIN_COVER = ethers.BigNumber.from("1000000000000000");  // 0.001 ETH
+	const value     = minValue.gte(MIN_COVER) ? minValue : MIN_COVER;
 
     // SIGN COMMITMENT (digest not exposed)
     const burnId = await contract.burnIds(user);
