@@ -1507,14 +1507,30 @@ async function burnAnon() {
 	);
 	const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
 
-    // GAS SAFETY BUFFER
-    let estGas;
-    try {
-      estGas = await contract.estimateGas.requestBurn(stealthAddress, signature, entropy, { value });
-    } catch {
-      estGas = ethers.BigNumber.from(400000); // fallback
-    }
-    const finalGasLimit = estGas.add(100000);
+	// GAS SAFETY BUFFER
+	let estGas;
+	try {
+	  estGas = await contract.estimateGas.requestBurn(stealthAddress, signature, entropy, { value });
+	} catch {
+	  estGas = ethers.BigNumber.from(400000); // fallback
+	}
+	const finalGasLimit = estGas.add(100000);
+
+	// 1) simulate the call to get the revert reason
+try {
+  await contract.callStatic.requestBurn(
+	stealthAddress,
+	signature,
+	entropy,
+	{ value }
+  );
+} catch (simError) {
+  // show the real revert message
+  const msg = simError.error?.message || simError.message;
+  burningLog.textContent = `Simulation failed: ${msg}`;
+  burningLog.className = 'log error';
+  return;
+}
 
     // SEND TX
     logToConsole(burnConsole, 'Sending burn transaction...', '');
