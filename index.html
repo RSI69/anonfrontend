@@ -1497,8 +1497,8 @@ async function burnAnon() {
     // SIGN COMMITMENT (digest not exposed)
     const burnId = await contract.burnIds(user);
 	const messageHash = ethers.utils.solidityKeccak256(
-	  ['address','uint256','address','uint256','uint256','uint256'],
-	  [stealthAddress, burnId, CONTRACT, chainId, value, entropyBN]
+	  ['address','uint256','address','address','uint256','uint256','uint256'],
+	  [stealthAddress, burnId, user, CONTRACT, chainId, value, entropyBN]
 	);
 	const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
 
