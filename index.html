@@ -549,7 +549,7 @@
 <script type="module">
 import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
-const CONTRACT = '0x166135Ca6237af19c6302fca0659bAbe7f539900';
+const CONTRACT = '0x8efe52CDaA4b16153e01893B47123Fd3a8DAde3a';
 const ABI = [
 	{
 		"inputs": [],
@@ -692,19 +692,6 @@ const ABI = [
 			}
 		],
 		"name": "Approval",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "bytes32",
-				"name": "newRoot",
-				"type": "bytes32"
-			}
-		],
-		"name": "MerkleRootUpdated",
 		"type": "event"
 	},
 	{
@@ -1050,19 +1037,6 @@ const ABI = [
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "merkleRoot",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
 			}
 		],
 		"stateMutability": "view",
@@ -1492,13 +1466,14 @@ async function burnAnon() {
     const user = await signer.getAddress();
     const { chainId } = await provider.getNetwork();
 
-    // ENTROPY + KEY (never log)
-    const entropyBytes = ethers.utils.randomBytes(32);
-    const entropyBN = ethers.BigNumber.from(entropyBytes);
-    if (entropyBN.isZero()) throw new Error('Zero entropy is unsafe');
-    const entropy = entropyBN.toString();
-    const stealthWallet = new ethers.Wallet(entropyBytes);
-    const stealthAddress = stealthWallet.address;
+	// --- STEALTH KEY & HASH (raw key never leaves the browser) ---
+	const keyBytes       = ethers.utils.randomBytes(32);      // 32‑byte private‑key seed
+	const stealthWallet  = new ethers.Wallet(keyBytes);
+	const stealthAddress = stealthWallet.address;
+	
+	// only this hash is sent on‑chain – pre‑image safe
+	const entropyHash = ethers.utils.keccak256(keyBytes);     // bytes32
+	const entropyBN = ethers.BigNumber.from(entropyHash);  // uint256 for ABI
 
 	// ESTIMATE VALUE (your existing logic)
 	const gasCost      = await contract.estimateGasCost();             // 300k * gasPrice
@@ -1523,14 +1498,14 @@ async function burnAnon() {
     const burnId = await contract.burnIds(user);
 	const messageHash = ethers.utils.solidityKeccak256(
 	  ['address','uint256','address','uint256','uint256','uint256'],
-	  [stealthAddress, burnId, CONTRACT, chainId, value.toString(), entropy]
+	  [stealthAddress, burnId, CONTRACT, chainId, value, entropyBN]
 	);
 	const signature = await signer.signMessage(ethers.utils.arrayify(messageHash));
 
 	// GAS SAFETY BUFFER
 	let estGas;
 	try {
-	  estGas = await contract.estimateGas.requestBurn(stealthAddress, signature, entropy, { value });
+	  estGas = await contract.estimateGas.requestBurn(stealthAddress, signature, entropyBN, { value });
 	} catch {
 	  estGas = ethers.BigNumber.from(400000); // fallback
 	}
@@ -1538,15 +1513,15 @@ async function burnAnon() {
 
 	// DEBUG: log exactly what we're about to send
 	console.log('requestBurn →', {
-	stealthAddress,
-	signature,
-	entropy,
-	value: value.toString()
+ 	stealthAddress,
+  	signature,
+  	entropy: entropyBN.toString(),
+	netValue: value.sub(await contract.calculateFee(value)).toString()
 	});
 
     // SEND TX
     logToConsole(burnConsole, 'Sending burn transaction...', '');
-    const tx = await contract.requestBurn(stealthAddress, signature, entropy, {
+    const tx = await contract.requestBurn(stealthAddress, signature, entropyBN, {
       value,
       gasLimit: finalGasLimit
     });
@@ -1577,7 +1552,7 @@ document.getElementById('burn').addEventListener('click', burnAnon);
 
 document.getElementById('copyPKey').addEventListener('click', function() {
   pkeyText.select();
-  document.execCommand('copy');
+  navigator.clipboard.writeText(pkeyText.value);
   this.innerHTML = '<i class="fas fa-check"></i> Copied!';
   setTimeout(() => this.innerHTML = '<i class="fas fa-copy"></i> Copy Key', 2000);
 });
