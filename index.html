@@ -3,21 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ANONToken – Stealth Transfer System</title>
+  <title>ANONToken · OG-Ethereum Ethos · Privacy Primitive · Linea Native</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --primary: #ff0048;
-      --secondary: #212121;
-      --bg-dark: #0a0a0a;
-      --bg-panel: #141414;
-      --text: #e0e0e0;
-      --text-dim: #9e9e9e;
-      --success: #00cc66;
-      --warning: #ff9100;
-      --font-mono: 'Courier New', monospace;
-    }
-    
+	:root {
+	  /* Linea cyan + deep-navy UI */
+	  --primary:   #00c2ff;   /* Linea brand blue */
+	  --secondary: #0d1218;   /* dark-navy surface */
+	  --bg-dark:   #06090d;
+	  --bg-panel:  #0f151d;
+	  --text:      #e8f9ff;   /* very-light cyan for contrast */
+	  --text-dim:  #93b7c4;
+	  --success:   #00e5ff;   /* brighter cyan flash */
+	  --warning:   #ff9100;   /* keep for contrast */
+	  --font-mono: 'Courier New', monospace;
+
+
+
+	}
+
+	.powered{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  margin-top:8px;
+  opacity:.7;
+}
+.powered img{
+  filter:drop-shadow(0 0 4px #00c2ff55);
+}
+.bat-logo{
+  height:40px;
+  width:auto;
+  filter:drop-shadow(0 0 6px var(--primary));
+  margin-right:15px;
+}
+
+
     * {
       margin: 0;
       padding: 0;
@@ -30,8 +52,8 @@
       color: var(--text);
       min-height: 100vh;
       background-image: 
-        radial-gradient(rgba(255, 0, 72, 0.03) 1px, transparent 1px),
-        radial-gradient(rgba(255, 0, 72, 0.03) 1px, transparent 1px);
+        radial-gradient(rgba(0, 194, 255, 0.06) 1px, transparent 1px),
+        radial-gradient(rgba(0, 194, 255, 0.06) 1px, transparent 1px);
       background-size: 40px 40px;
       background-position: 0 0, 20px 20px;
     }
@@ -59,6 +81,8 @@
       align-items: center;
       justify-content: center;
     }
+
+
     
     .logo span {
       color: var(--primary);
@@ -82,7 +106,7 @@
       padding: 30px;
       margin-bottom: 30px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 0, 72, 0.1);
+      border: 1px solid rgba(0, 194, 255, 0.15);
       position: relative;
       overflow: hidden;
     }
@@ -165,10 +189,7 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
     
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #990030);
-      color: white;
-    }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), #0084d1); color: #fff; }
     
     .btn-primary::after {
       content: '';
@@ -289,7 +310,7 @@
       max-width: 600px;
       width: 90%;
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 0, 72, 0.2);
+      border: 1px solid rgba(0, 194, 255, 0.2);
       position: relative;
     }
     
@@ -339,9 +360,9 @@
     
     /* Animation & Visual Effects */
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255, 0, 72, 0.4); }
-      70% { box-shadow: 0 0 0 10px rgba(255, 0, 72, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 0, 72, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(0, 194, 255, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(0, 194, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 194, 255, 0); }
     }
     
     .pulse {
@@ -433,15 +454,36 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1 class="logo">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="45" stroke="#ff0048" stroke-width="2"/>
-          <path d="M30 75L70 25M30 25L70 75" stroke="#ff0048" stroke-width="3"/>
-          <circle cx="50" cy="50" r="15" stroke="#ff0048" stroke-width="2"/>
-        </svg>
-        <span>ANON</span>TOKEN
-      </h1>
-      <p class="subtitle">Financial privacy is a human right.</p>
+<h1 class="logo">
+  <!-- Cartoon bat logo as inline SVG -->
+  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+       stroke="var(--primary)" stroke-width="12" stroke-linecap="round"
+       stroke-linejoin="round" fill="#06090d" class="bat-logo">
+    <circle cx="100" cy="110" r="48"/>
+    <circle cx="100" cy="60"  r="38"/>
+    <path d="M70 35  55 5  85 25Z"/>
+    <path d="M130 35 145 5 115 25Z"/>
+    <path d="M52 105 Q 10 125 35 160 Q 20 160 42 185 Q 70 165 56 115Z"/>
+    <path d="M148 105 Q 190 125 165 160 Q 180 160 158 185 Q 130 165 144 115Z"/>
+    <path d="M72 85 50 70"/>
+    <path d="M128 85 150 70"/>
+    <circle cx="78"  cy="165" r="10"/>
+    <circle cx="122" cy="165" r="10"/>
+    <circle cx="85"  cy="65" r="14" fill="#e8f9ff" stroke="none"/>
+    <circle cx="115" cy="65" r="14" fill="#e8f9ff" stroke="none"/>
+    <circle cx="85"  cy="65" r="7"  fill="#06090d" stroke="none"/>
+    <circle cx="115" cy="65" r="7"  fill="#06090d" stroke="none"/>
+    <path d="M88 90 Q100 100 112 90" fill="none"/>
+    <path d="M100 93 v11" fill="none"/>
+  </svg>
+  <span>ANON</span>TOKEN
+</h1>
+
+	  	<a href="https://linea.build" target="_blank" class="powered">
+			<img src="linea_logo.svg" alt="Linea" height="26">
+			</a>
+
+      <p class="subtitle">Unlink your MetaMask Card from your on-chain identity, for free, only on Linea.</p>
     </div>
     
     <div class="panel">
@@ -450,7 +492,7 @@
         <div class="status-dot" id="connectionDot"></div>
         <span id="connectionStatus">Disconnected</span>
       </div>
-      <p>Connect your wallet to access ANONToken.</p>
+      <p>Connect your wallet to access ANONToken on Linea.</p>
       <button id="connect" class="btn btn-primary"><i class="fas fa-wallet"></i> Connect Wallet</button>
       
       <div id="walletInfo" style="display: none;">
@@ -464,11 +506,11 @@
     
     <div class="grid">
       <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-coins"></i> Mint ANON Token (Required for Privacy Transfer)</h2>
-        <p>Mint 1 ANON token to begin anonymizing your ETH.</p>
+        <h2 class="panel-title"><i class="fas fa-coins"></i>Mint ANON (1-click)</h2>
+        <p>Mint exactly 1 ANON to start the unlinking process..</p>
         <div class="info-box">
-          <p>Cost per token: <strong>0.00000001 ETH</strong><br>
-          Linea Testnet v.Alpha.</p>
+          <p>Cost per token: <strong>0.00000001 ETH (Linea Sepolia preview)</strong><br>
+          No relayers • No bridges • No fees</p>
         </div>
         <button id="mint" class="btn btn-primary" disabled><i class="fas fa-fire-alt"></i> Mint 1 ANON</button>
         <div class="console" id="mintConsole">
@@ -477,12 +519,12 @@
       </div>
       
       <div class="panel">
-        <h2 class="panel-title"><i class="fas fa-mask"></i>Send ETH Anonymously (Burn 1 ANON)</h2>
-        <p>Anonymize your Ethereum on Linea.</p>
+        <h2 class="panel-title"><i class="fas fa-mask"></i>Burn ANON & receive ETH privately</h2>
+        <p>Burning sends your ETH to a brand-new stealth wallet that only you control — completely severing links to your everyday wallet or MetaMask Card.</p>
         <div class="info-box">
-          <p title="A 0.3% fee and gas pool prepayment are deducted from the ETH you send.">Your funds will be sent to a stealth address only you can access.</p>
+          <p title="A gas pool prepayment is deducted from the ETH you send. You will get the leftovers back.">Your funds will be sent to a stealth address only you can access.</p>
         </div>
-        <button id="burn" class="btn btn-primary" disabled title="Burn 1 ANON to anonymously queue ETH for withdrawal to a stealth address."><i class="fas fa-ghost"></i> Burn 1 ANON</button>
+        <button id="burn" class="btn btn-primary" disabled title="Burn 1 ANON to queue an anonymous ETH withdrawal (no fee, just prepay gas)"><i class="fas fa-ghost"></i> Burn 1 ANON</button>
         <div class="console" id="burnConsole">
           <div class="log typing">System ready...</div>
         </div>
@@ -493,26 +535,26 @@
       <h2 class="panel-title"><i class="fas fa-shield-alt"></i> User Flow </h2>
       <div class="steps">
         <div class="step">
-          <div class="step-title">Connect Your Wallet</div>
+          <div class="step-title">Connect Wallet (Linea Sepolia)</div>
           <p class="step-desc">Connect your MetaMask or Rabby wallet to the Linea Sepolia testnet.</p>
         </div>
         <div class="step">
-          <div class="step-title">Mint ANON Tokens</div>
+          <div class="step-title">Mint 1 ANON</div>
           <p class="step-desc">Mint an ANON token for 0.00000001 ETH.</p>
         </div>
         <div class="step">
-          <div class="step-title">Initiate Stealth Transfer</div>
-          <p class="step-desc" title="Withdrawals only process once 50 users have burned to preserve anonymity.">Burn your ANON tokens to queue an anonymous withdrawal. 0.00000001 ETH - 0.3% Fee - Gas is sent to your stealth wallet after a 1-12 hour delay, and once 50 total burns are queued.</p>
+          <div class="step-title">Burn to queue stealth withdrawal (no fee)</div>
+          <p class="step-desc" title="Withdrawals only process once 50 users have burned to preserve anonymity.">Burn your ANON tokens to queue an anonymous withdrawal. 0.00000001 ETH - No Fee - Gas is sent to your stealth wallet after a 1-12 hour delay, and once 50 total burns are queued.</p>
         </div>
         <div class="step">
-          <div class="step-title">Secure Your Private Key and Wait</div>
+          <div class="step-title">Import the private key, avoid phishing scams, spend freely</div>
           <p class="step-desc" title="ETH is sent after a random delay between 1–12 hours to unlink timing metadata.">Save the private key securely. This is the only way to access your funds sent to your stealth address. Wait for 1-12 hours after 50 burns are queued. </p>
         </div>
       </div>
     </div>
     
     <div class="footer">
-      <p>ANONToken &copy; 2025 | Privacy dApp | Linea Sepolia Testnet</p>
+      <p>ANONToken &copy; 2025 | OG-Ethereum privacy primitive | Linea Sepolia Testnet</p>
     </div>
   </div>
   
