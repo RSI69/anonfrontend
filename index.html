@@ -22,6 +22,14 @@
 
 	}
 
+	  .linea-logo {
+  height: 26px;
+  width: auto;
+  fill: var(--primary);
+  filter: drop-shadow(0 0 4px #00c2ff55);
+}
+
+
 	.powered{
   display:inline-flex;
   gap:6px;
@@ -29,9 +37,7 @@
   margin-top:8px;
   opacity:.7;
 }
-.powered img{
-  filter:drop-shadow(0 0 4px #00c2ff55);
-}
+
 .bat-logo{
   height:40px;
   width:auto;
@@ -479,9 +485,14 @@
   <span>ANON</span>TOKEN
 </h1>
 
-	  	<a href="https://linea.build" target="_blank" class="powered">
-			<img src="linea_logo.svg" alt="Linea" height="26">
-			</a>
+<a href="https://linea.build" target="_blank" class="powered">
+  <svg class="linea-logo" viewBox="0 0 100 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+    <rect x="0" y="4" width="8" height="16" rx="1" />
+    <rect x="12" y="0" width="8" height="24" rx="1" />
+    <text x="28" y="17" font-family="Segoe UI, Roboto, sans-serif" font-size="16" fill="var(--text)">Linea</text>
+  </svg>
+</a>
+
 
       <p class="subtitle">Unlink your MetaMask Card from your on-chain identity, for free, only on Linea.</p>
     </div>
