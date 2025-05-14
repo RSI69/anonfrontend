@@ -1414,19 +1414,24 @@ async function connectWallet () {
     return;
   }
 
-  /* 1. ask MetaMask for an account up-front */
-  let accounts;
-  try {
-    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  } catch (err) {
-    logToConsole(mintConsole, `MetaMask error: ${err.message}`, 'error');
-    return;
-  }
-  if (!accounts.length) {
-    logToConsole(mintConsole, 'User rejected account access.', 'error');
-    return;
-  }
-  currentAccount = accounts[0];
+ /* 1️⃣  ask MetaMask for the permission first  */
+ try {
+   await window.ethereum.request({
+     method: 'wallet_requestPermissions',
+     params: [{ eth_accounts: {} }]
+   });
+ } catch (err) {
+   logToConsole(mintConsole, `MetaMask permission denied: ${err.message}`, 'error');
+   return;
+ }
+
+ /* 2️⃣  now read whichever account MetaMask unlocked */
+ const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+   if (!accounts.length) {
+     logToConsole(mintConsole, 'MetaMask is locked – unlock it and click Connect again.', 'error');
+     return;
+   }
+   currentAccount = accounts[0];
 
   /* 2. make sure we’re on Linea Sepolia */
   const log = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
