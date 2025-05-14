@@ -1277,7 +1277,8 @@ const ABI = [
 	}
 ]
 	
-const LINEA = '0xe705';   // 59141
+const LINEA_DEC = 59141;      // decimal
+const LINEA_HEX = '0xe705';   // hex
 
 let provider;
 let contract;
@@ -1314,42 +1315,39 @@ function logToConsole(consoleEl, message, type = '') {
   return log; // Return the log element for later reference
 }
 
-async function ensureLinea() {
+async function ensureLinea () {
   const cid = await window.ethereum.request({ method: 'eth_chainId' });
-  if (cid === LINEA) return true;
+  if (parseInt(cid, 16) === LINEA_DEC) return true;     // already on Linea
 
   try {
+    /* try to switch first */
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: LINEA }]
+      params: [{ chainId: LINEA_HEX }]
     });
     return true;
   } catch (e) {
+    /* chain hasn’t been added yet */
     if (e.code === 4902) {
       try {
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [{
-            chainId: LINEA,
+            chainId: LINEA_HEX,
             chainName: 'Linea Sepolia',
             rpcUrls: ['https://rpc.sepolia.linea.build'],
             blockExplorerUrls: ['https://sepolia.lineascan.build'],
-            nativeCurrency: {
-              name: 'LineaETH',
-              symbol: 'ETH',
-              decimals: 18
-            }
+            nativeCurrency: { name: 'LineaETH', symbol: 'ETH', decimals: 18 }
           }]
         });
         return true;
-      } catch (err) {
-        logToConsole(mintConsole, `Failed to add Linea network: ${err.message}`, 'error');
+      } catch (addErr) {
+        logToConsole(mintConsole, `Failed to add Linea: ${addErr.message}`, 'error');
         return false;
       }
-    } else {
-      logToConsole(mintConsole, `Failed to switch to Linea: ${e.message}`, 'error');
-      return false;
     }
+    logToConsole(mintConsole, `Failed to switch: ${e.message}`, 'error');
+    return false;
   }
 }
 
@@ -1414,47 +1412,46 @@ async function connectWallet() {
     logToConsole(mintConsole, 'MetaMask or Rabby not found', 'error');
     return;
   }
-  
-  const connectingLog = logToConsole(mintConsole, 'Connecting to wallet...', 'typing');
-  
-  try {
-    provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-    const accounts = await provider.send('eth_requestAccounts', []);
-    currentAccount = accounts[0];
-    
-    const success = await ensureLinea();
-    if (!success) {
-      connectingLog.textContent = 'Failed to connect to Linea network.';
-      connectingLog.className = 'log error';
-      return;
-    }
-    
-    contract = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
-    
-    // Update UI
-    connectionDot.classList.add('connected');
-    connectionStatus.textContent = `Connected: ${currentAccount.substring(0, 6)}...${currentAccount.substring(38)}`;
-    
-    // Show wallet info
-    walletInfo.style.display = 'block';
-    await updateBalance();
-    
-    // Enable buttons
-    mintBtn.disabled = false;
-    
-    connectingLog.textContent = 'Connected successfully!';
-    connectingLog.className = 'log success';
-    
-    // Setup event listeners for account changes
-    window.ethereum.on('accountsChanged', handleAccountsChanged);
-    window.ethereum.on('chainChanged', handleChainChanged);
-    
-    logToConsole(mintConsole, 'Ready for transactions', '');
-  } catch (err) {
-    connectingLog.textContent = `Connection failed: ${err.message}`;
+
+  /* 1. switch / add Linea Sepolia first */
+  const connectingLog = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
+  const ok = await ensureLinea();
+  if (!ok) {
+    connectingLog.textContent = 'Failed to switch / add Linea network.';
     connectingLog.className = 'log error';
+    return;
   }
+
+  /* 2. now ask MetaMask for accounts */
+  provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
+  const accounts = await provider.send('eth_requestAccounts', []);
+  if (!accounts.length) {
+    connectingLog.textContent = 'No accounts returned by wallet.';
+    connectingLog.className = 'log error';
+    return;
+  }
+  currentAccount = accounts[0];
+
+  /* 3. wire up contract & UI */
+  contract = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
+
+  connectionDot.classList.add('connected');
+  connectionStatus.textContent =
+    `Connected: ${currentAccount.slice(0, 6)}…${currentAccount.slice(-4)}`;
+
+  walletInfo.style.display = 'block';
+  await updateBalance();
+  mintBtn.disabled = false;
+
+  connectingLog.textContent = 'Connected successfully!';
+  connectingLog.className = 'log success';
+
+  window.ethereum.on('accountsChanged', handleAccountsChanged);
+  window.ethereum.on('chainChanged', handleChainChanged);
+
+  logToConsole(mintConsole, 'Ready for transactions', '');
 }
+
 
 function handleAccountsChanged(accounts) {
   if (accounts.length === 0) {
