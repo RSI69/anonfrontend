@@ -1442,8 +1442,8 @@ if (!ok) {
   await updateBalance();
   mintBtn.disabled = false;
 
-  connectingLog.textContent = 'Connected successfully!';
-  connectingLog.className = 'log success';
+  switchingLog.textContent = 'Connected successfully!';
+  switchingLog.className   = 'log success';
 
   window.ethereum.on('accountsChanged', handleAccountsChanged);
   window.ethereum.on('chainChanged', handleChainChanged);
