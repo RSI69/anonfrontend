@@ -1407,50 +1407,57 @@ function startSecurityTimer() {
 }
 
 /* ---------- UI actions ---------- */
-async function connectWallet() {
+async function connectWallet () {
+  // 0.  basic guard
   if (!window.ethereum) {
-    logToConsole(mintConsole, 'MetaMask or Rabby not found', 'error');
+    logToConsole(mintConsole, 'MetaMask not found in this browser.', 'error');
     return;
   }
 
-  /* 1. switch / add Linea Sepolia first */
-provider      = new ethers.providers.Web3Provider(window.ethereum, 'any');
-const accounts = await provider.send('eth_requestAccounts', []);
-if (!accounts.length) {
-  logToConsole(mintConsole, 'User rejected account access.', 'error');
-  return;
-}
-currentAccount = accounts[0];
+  /* 1. ask MetaMask for an account up-front */
+  let accounts;
+  try {
+    accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+  } catch (err) {
+    logToConsole(mintConsole, `MetaMask error: ${err.message}`, 'error');
+    return;
+  }
+  if (!accounts.length) {
+    logToConsole(mintConsole, 'User rejected account access.', 'error');
+    return;
+  }
+  currentAccount = accounts[0];
 
-/* 2. now switch / add Linea Sepolia */
-const switchingLog = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
-const ok = await ensureLinea();
-if (!ok) {
-  switchingLog.textContent = 'Failed to switch / add Linea network.';
-  switchingLog.className   = 'log error';
-  return;
-}
+  /* 2. make sure we’re on Linea Sepolia */
+  const log = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
+  if (!(await ensureLinea())) {
+    log.textContent = 'Failed to switch / add the Linea network.';
+    log.className   = 'log error';
+    return;
+  }
 
-  /* 3. wire up contract & UI */
+  /* 3. now it’s safe to create the ethers provider + contract handle */
+  provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
   contract = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
 
+  /* 4. happy-path UI updates */
   connectionDot.classList.add('connected');
   connectionStatus.textContent =
-    `Connected: ${currentAccount.slice(0, 6)}…${currentAccount.slice(-4)}`;
+      `Connected: ${currentAccount.slice(0,6)}…${currentAccount.slice(-4)}`;
 
   walletInfo.style.display = 'block';
   await updateBalance();
   mintBtn.disabled = false;
 
-  switchingLog.textContent = 'Connected successfully!';
-  switchingLog.className   = 'log success';
+  log.textContent = 'Connected successfully!';
+  log.className   = 'log success';
 
+  /* 5. react to future MetaMask changes */
   window.ethereum.on('accountsChanged', handleAccountsChanged);
-  window.ethereum.on('chainChanged', handleChainChanged);
+  window.ethereum.on('chainChanged',  () => window.location.reload());
 
-  logToConsole(mintConsole, 'Ready for transactions', '');
+  logToConsole(mintConsole, 'Ready for transactions.', '');
 }
-
 
 function handleAccountsChanged(accounts) {
   if (accounts.length === 0) {
