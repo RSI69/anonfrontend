@@ -1315,23 +1315,30 @@ function logToConsole(consoleEl, message, type = '') {
 }
 
 async function ensureLinea() {
-  const cid = await window.ethereum.request({method:'eth_chainId'});
+  const cid = await window.ethereum.request({ method: 'eth_chainId' });
   if (cid === LINEA) return true;
-  
+
   try {
-    await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:LINEA}]});
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: LINEA }]
+    });
     return true;
   } catch (e) {
     if (e.code === 4902) {
       try {
         await window.ethereum.request({
-          method:'wallet_addEthereumChain',
-          params:[{
-            chainId:LINEA,
-            chainName:'Linea Sepolia Testnet',
-            rpcUrls:['https://rpc.sepolia.linea.build'],
-            nativeCurrency:{name:'LineaETH',symbol:'LineaETH',decimals:18},
-            blockExplorerUrls:['https://sepolia.lineascan.build']
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: LINEA,
+            chainName: 'Linea Sepolia',
+            rpcUrls: ['https://rpc.sepolia.linea.build'],
+            blockExplorerUrls: ['https://sepolia.lineascan.build'],
+            nativeCurrency: {
+              name: 'LineaETH',
+              symbol: 'ETH',
+              decimals: 18
+            }
           }]
         });
         return true;
@@ -1339,12 +1346,13 @@ async function ensureLinea() {
         logToConsole(mintConsole, `Failed to add Linea network: ${err.message}`, 'error');
         return false;
       }
-    } else { 
+    } else {
       logToConsole(mintConsole, `Failed to switch to Linea: ${e.message}`, 'error');
       return false;
     }
   }
 }
+
 
 function saveKey(hex) {
   // Create a text file with both private key and derived address
