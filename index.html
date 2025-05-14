@@ -1408,60 +1408,44 @@ function startSecurityTimer() {
 
 /* ---------- UI actions ---------- */
 async function connectWallet () {
-  // 0.  basic guard
+  // 0️⃣ Make sure MetaMask exists
   if (!window.ethereum) {
-    logToConsole(mintConsole, 'MetaMask not found in this browser.', 'error');
+    logToConsole(mintConsole, "MetaMask not found.", "error");
     return;
   }
 
- /* 1️⃣  ask MetaMask for the permission first  */
- try {
-   await window.ethereum.request({
-     method: 'wallet_requestPermissions',
-     params: [{ eth_accounts: {} }]
-   });
- } catch (err) {
-   logToConsole(mintConsole, `MetaMask permission denied: ${err.message}`, 'error');
-   return;
- }
-
- /* 2️⃣  now read whichever account MetaMask unlocked */
- const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-   if (!accounts.length) {
-     logToConsole(mintConsole, 'MetaMask is locked – unlock it and click Connect again.', 'error');
-     return;
-   }
-   currentAccount = accounts[0];
-
-  /* 2. make sure we’re on Linea Sepolia */
-  const log = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
-  if (!(await ensureLinea())) {
-    log.textContent = 'Failed to switch / add the Linea network.';
-    log.className   = 'log error';
+  // 1️⃣ Ask MetaMask to unlock & return an account
+  let accounts;
+  try {
+    accounts = await ethereum.request({ method: "eth_requestAccounts" });
+  } catch (err) {
+    logToConsole(mintConsole, `MetaMask error: ${err.message}`, "error");
     return;
   }
+  if (!accounts.length) {
+    logToConsole(mintConsole, "User rejected connection.", "error");
+    return;
+  }
+  currentAccount = accounts[0];
 
-  /* 3. now it’s safe to create the ethers provider + contract handle */
-  provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-  contract = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
+  // 2️⃣ Ensure Linea Sepolia
+  if (!(await ensureLinea())) return;
 
-  /* 4. happy-path UI updates */
-  connectionDot.classList.add('connected');
+  // 3️⃣ Create provider & update UI
+  provider  = new ethers.providers.Web3Provider(window.ethereum, "any");
+  contract  = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
+
+  connectionDot.classList.add("connected");
   connectionStatus.textContent =
-      `Connected: ${currentAccount.slice(0,6)}…${currentAccount.slice(-4)}`;
-
-  walletInfo.style.display = 'block';
+        `Connected: ${currentAccount.slice(0,6)}…${currentAccount.slice(-4)}`;
+  walletInfo.style.display = "block";
   await updateBalance();
   mintBtn.disabled = false;
+  logToConsole(mintConsole, "Ready for transactions.", "success");
 
-  log.textContent = 'Connected successfully!';
-  log.className   = 'log success';
-
-  /* 5. react to future MetaMask changes */
-  window.ethereum.on('accountsChanged', handleAccountsChanged);
-  window.ethereum.on('chainChanged',  () => window.location.reload());
-
-  logToConsole(mintConsole, 'Ready for transactions.', '');
+  // 4️⃣ React to future MetaMask changes
+  ethereum.on("accountsChanged", handleAccountsChanged);
+  ethereum.on("chainChanged", () => window.location.reload());
 }
 
 function handleAccountsChanged(accounts) {
