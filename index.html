@@ -600,27 +600,7 @@
   </div>
 
 <script type="module">
-
-  <!-- NEW first lines inside the block -->
-  import detectEthereumProvider from
-    'https://cdn.jsdelivr.net/npm/@metamask/detect-provider/dist/detect-provider.min.js';
-  import { ethers } from
-    'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
-
-  const eth = await detectEthereumProvider({ mustBeMetaMask: false });
-
-  if (!eth) {
-    alert('No wallet found – please install MetaMask or Rabby.');
-    throw new Error('No provider');
-  }
-
-  // Pick the provider we want (Rabby first choice)
-  const injected = eth.providers          // present only when ≥ 2 providers
-        ? eth.providers.find(p => p.isRabby) || eth.providers[0]
-        : eth;                            // single-provider case
-
-  const ethereum = injected;              // <— 1-line shim
-
+import { ethers } from 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.esm.min.js';
 
 const CONTRACT = '0xAfEAE83BD71E44d4291E95D621B10f3d3ff29a28';
 const ABI = [
@@ -1429,7 +1409,7 @@ function startSecurityTimer() {
 /* ---------- UI actions ---------- */
 async function connectWallet () {
   // 0️ Make sure MetaMask exists
-  if (!ethereum) {
+  if (!window.ethereum) {
     logToConsole(mintConsole, "MetaMask not found.", "error");
     return;
   }
@@ -1452,7 +1432,7 @@ async function connectWallet () {
   if (!(await ensureLinea())) return;
 
   // 3️ Create provider & update UI
-  provider = new ethers.providers.Web3Provider(ethereum, "any");
+  provider  = new ethers.providers.Web3Provider(window.ethereum, "any");
   const signer = provider.getSigner(currentAccount);   // pass the address explicitly
   contract     = new ethers.Contract(CONTRACT, ABI, signer);
 
