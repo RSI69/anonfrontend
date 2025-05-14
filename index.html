@@ -1408,13 +1408,13 @@ function startSecurityTimer() {
 
 /* ---------- UI actions ---------- */
 async function connectWallet () {
-  // 0️⃣ Make sure MetaMask exists
+  // 0️ Make sure MetaMask exists
   if (!window.ethereum) {
     logToConsole(mintConsole, "MetaMask not found.", "error");
     return;
   }
 
-  // 1️⃣ Ask MetaMask to unlock & return an account
+  // 1️ Ask MetaMask to unlock & return an account
   let accounts;
   try {
     accounts = await ethereum.request({ method: "eth_requestAccounts" });
@@ -1428,12 +1428,13 @@ async function connectWallet () {
   }
   currentAccount = accounts[0];
 
-  // 2️⃣ Ensure Linea Sepolia
+  // 2 Ensure Linea Sepolia
   if (!(await ensureLinea())) return;
 
-  // 3️⃣ Create provider & update UI
+  // 3️ Create provider & update UI
   provider  = new ethers.providers.Web3Provider(window.ethereum, "any");
-  contract  = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
+  const signer = provider.getSigner(currentAccount);   // pass the address explicitly
+  contract     = new ethers.Contract(CONTRACT, ABI, signer);
 
   connectionDot.classList.add("connected");
   connectionStatus.textContent =
@@ -1443,7 +1444,7 @@ async function connectWallet () {
   mintBtn.disabled = false;
   logToConsole(mintConsole, "Ready for transactions.", "success");
 
-  // 4️⃣ React to future MetaMask changes
+  // 4️ React to future MetaMask changes
   ethereum.on("accountsChanged", handleAccountsChanged);
   ethereum.on("chainChanged", () => window.location.reload());
 }
