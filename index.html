@@ -1414,23 +1414,22 @@ async function connectWallet() {
   }
 
   /* 1. switch / add Linea Sepolia first */
-  const connectingLog = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
-  const ok = await ensureLinea();
-  if (!ok) {
-    connectingLog.textContent = 'Failed to switch / add Linea network.';
-    connectingLog.className = 'log error';
-    return;
-  }
+provider      = new ethers.providers.Web3Provider(window.ethereum, 'any');
+const accounts = await provider.send('eth_requestAccounts', []);
+if (!accounts.length) {
+  logToConsole(mintConsole, 'User rejected account access.', 'error');
+  return;
+}
+currentAccount = accounts[0];
 
-  /* 2. now ask MetaMask for accounts */
-  provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
-  const accounts = await provider.send('eth_requestAccounts', []);
-  if (!accounts.length) {
-    connectingLog.textContent = 'No accounts returned by wallet.';
-    connectingLog.className = 'log error';
-    return;
-  }
-  currentAccount = accounts[0];
+/* 2. now switch / add Linea Sepolia */
+const switchingLog = logToConsole(mintConsole, 'Switching to Linea Sepolia…', 'typing');
+const ok = await ensureLinea();
+if (!ok) {
+  switchingLog.textContent = 'Failed to switch / add Linea network.';
+  switchingLog.className   = 'log error';
+  return;
+}
 
   /* 3. wire up contract & UI */
   contract = new ethers.Contract(CONTRACT, ABI, provider.getSigner());
